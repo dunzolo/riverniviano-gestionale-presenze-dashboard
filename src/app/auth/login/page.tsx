@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthForm } from "@/app/components/Form/AuthForm";
-import { Section } from "@/app/components/Section";
+import { AuthForm } from "@/components/Form/AuthForm";
+import { Section } from "@/components/Section";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Values } from "@/types";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";

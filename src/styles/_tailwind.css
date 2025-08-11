@@ -1,0 +1,19 @@
+/**
+ * Use this tool to create custom palette
+ * @see: https://uicolors.app/create
+ */
+@theme {
+  --color-primary-50: #eff8ff;
+  --color-primary-100: #def0ff;
+  --color-primary-200: #b6e2ff;
+  --color-primary-300: #75cdff;
+  --color-primary-400: #2cb5ff;
+  --color-primary-500: #10a6ff;
+  --color-primary-600: #007bd4;
+  --color-primary-700: #0061ab;
+  --color-primary-800: #00528d;
+  --color-primary-900: #064574;
+  --color-primary-950: #042b4d;
+  --color-primary-default: #10a6ff;
+  --color-primary-dark: #001529;
+}
