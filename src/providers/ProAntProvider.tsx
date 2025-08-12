@@ -1,4 +1,4 @@
-import { defaultFont } from "@/app/layout";
+import { defaultFont } from "@/font";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ProAliasToken, ProConfigProvider } from "@ant-design/pro-components";
