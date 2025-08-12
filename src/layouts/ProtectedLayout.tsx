@@ -22,10 +22,10 @@ export const ProtectedLayout = ({ children }: PropsWithChildren) => {
   if (
     user?.need_password_update !== "no" &&
     typeof window !== "undefined" &&
-    window.location.pathname !== `/aut/update-password`
+    window.location.pathname !== `/auth/update-password`
   ) {
     // here we can't use router
-    window.location.pathname = `/aut/update-password`;
+    window.location.pathname = `/auth/update-password`;
     return null;
   }
 
