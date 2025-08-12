@@ -45,12 +45,14 @@ export default function Layout({ children }: PropsWithChildren) {
       path: `/admin/dashboard`,
       icon: <FiHome />,
       name: "Dashboard",
+      bottom: true,
     },
     {
       role_names: ["full-access"],
       path: `/admin/user-admins`,
       icon: <FiUser />,
       name: "Utenti",
+      bottom: true,
     },
   ];
 

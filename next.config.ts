@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   distDir: "build",
   transpilePackages: [],
+  devIndicators: false,
   async redirects() {
     return [
       {

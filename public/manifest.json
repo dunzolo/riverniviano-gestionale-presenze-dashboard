@@ -1,0 +1,21 @@
+{
+  "name": "Codebase Dieffetech",
+  "short_name": "Codebase",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10a6ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/pwa-images/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/pwa-images/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

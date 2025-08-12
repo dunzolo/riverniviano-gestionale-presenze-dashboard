@@ -11,7 +11,8 @@ import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useMemo, useState } from "react";
+import { FiBell, FiUser } from "react-icons/fi";
 import { useWindowSize } from "react-use";
 import { ProtectedLayout } from "./ProtectedLayout";
 
@@ -96,7 +97,8 @@ const AdminPanelLayoutContent = ({
   const { width } = useWindowSize();
   const { token } = useToken();
 
-  const [menuCollapsed, setMenuCollapsed] = useState(width <= token.screenMD);
+  const isMobile = width <= token.screenMD;
+  const [menuCollapsed, setMenuCollapsed] = useState(isMobile);
 
   const filterMenu = (menu: MenuItem[]): MenuItem[] => {
     // Filtra il menu in base alle funzionalità dell'utente
@@ -145,9 +147,11 @@ const AdminPanelLayoutContent = ({
     });
   };
 
-  const menuItems = formatMenu(menu);
-
-  const filteredMenu = filterMenu(menuItems);
+  const menuItems = useMemo(() => filterMenu(formatMenu(menu)), [menu, user]);
+  const bottomItems = useMemo(
+    () => menuItems.filter((m) => m.bottom && m.path).slice(0, 5),
+    [menuItems]
+  );
 
   const userDropdown = [
     {
@@ -157,84 +161,105 @@ const AdminPanelLayoutContent = ({
   ];
 
   return (
-    <ProtectedLayout>
-      <ProLayout
-        collapsed={menuCollapsed}
-        onCollapse={setMenuCollapsed}
-        className="h-screen"
-        layout="side"
-        breadcrumbRender={(items) => [
-          { breadcrumbName: "Home" },
-          ...(items || []),
-        ]}
-        pageTitleRender={false}
-        title="" // hide antd name
-        logo={false}
-        token={theme.layout}
-        menuHeaderRender={(_, __, props) => {
-          if (props?.layout === "mix" || props?.isMobile) return null;
-          return <Logo logo={logo} collapsed={props?.collapsed} />;
-        }}
-        headerTitleRender={(_, __, props) => {
-          return <Logo logo={logo} collapsed={props?.collapsed} />;
-        }}
-        itemRender={({ path, breadcrumbName }: any) => {
-          if (path) {
-            const isActive = pathname === path;
-            return (
-              <Link
-                className={clsx(isActive && "!text-primary-default font-bold")}
-                href={path}
-              >
-                {breadcrumbName}
-              </Link>
-            );
-          }
-          return <div>{breadcrumbName}</div>;
-        }}
-        route={{ routes: filteredMenu }}
-        location={{ pathname }}
-        menuItemRender={(item, dom) => {
-          if (item.path?.startsWith("mailto:")) {
-            return <a href={item.path}>{dom}</a>;
-          }
+    <div className="relative min-h-screen">
+      <ProtectedLayout>
+        <ProLayout
+          collapsed={!isMobile ? menuCollapsed : true}
+          onCollapse={setMenuCollapsed}
+          className={clsx(
+            "min-h-screen",
+            isMobile && "pb-[calc(56px+env(safe-area-inset-bottom))]"
+          )}
+          layout="side"
+          breadcrumbRender={(items) => [
+            { breadcrumbName: "Home" },
+            ...(items || []),
+          ]}
+          pageTitleRender={false}
+          title="" // hide antd name
+          logo={false}
+          token={theme.layout}
+          headerRender={() => (!isMobile ? null : <CustomHeader />)}
+          menuHeaderRender={(_, __, props) => {
+            if (props?.layout === "mix" || props?.isMobile) return null;
+            return <Logo logo={logo} collapsed={props?.collapsed} />;
+          }}
+          headerTitleRender={(_, __, props) => {
+            return <Logo logo={logo} collapsed={props?.collapsed} />;
+          }}
+          itemRender={({ path, breadcrumbName }: any) => {
+            if (isMobile) return null;
+            if (path) {
+              const isActive = pathname === path;
+              return (
+                <Link
+                  className={clsx(
+                    isActive && "!text-primary-default font-bold"
+                  )}
+                  href={path}
+                >
+                  {breadcrumbName}
+                </Link>
+              );
+            }
+            return <div>{breadcrumbName}</div>;
+          }}
+          route={{ routes: menuItems }}
+          location={{ pathname }}
+          menuItemRender={(item, dom) => {
+            if (isMobile) return null;
+            if (item.path?.startsWith("mailto:")) {
+              return <a href={item.path}>{dom}</a>;
+            }
 
-          if (item.key) {
-            return (
-              <Link
-                href={item.key}
-                onClick={() => {
-                  if (width <= token.screenMD) setMenuCollapsed(true);
-                }}
-              >
-                {dom}
-              </Link>
-            );
-          }
+            if (item.key) {
+              return (
+                <Link
+                  href={item.key}
+                  onClick={() => {
+                    if (width <= token.screenMD) setMenuCollapsed(true);
+                  }}
+                >
+                  {dom}
+                </Link>
+              );
+            }
 
-          return dom;
-        }}
-        avatarProps={{
-          icon: <UserOutlined />,
-          size: "small",
-          title: user?.name,
-          render: (props, dom) => (
-            <>
-              <Dropdown
-                arrow
-                className="cursor-pointer"
-                trigger={["click"]}
-                menu={{ items: userDropdown }}
-              >
-                {dom}
-              </Dropdown>
-            </>
-          ),
-        }}
-      >
-        <div>{children}</div>
-      </ProLayout>
-    </ProtectedLayout>
+            return dom;
+          }}
+          avatarProps={{
+            icon: <UserOutlined />,
+            size: "small",
+            title: user?.name,
+            render: (props, dom) => (
+              <>
+                <Dropdown
+                  arrow
+                  className="cursor-pointer"
+                  trigger={["click"]}
+                  menu={{ items: userDropdown }}
+                >
+                  {dom}
+                </Dropdown>
+              </>
+            ),
+          }}
+        >
+          <div
+            className={clsx(
+              isMobile && "pb-[calc(56px+env(safe-area-inset-bottom))]"
+            )}
+          >
+            {children}
+          </div>
+        </ProLayout>
+
+        {/* 🔥 Mobile Bottom Tab Bar */}
+        {isMobile && bottomItems.length > 0 && (
+          <MobileTabBar items={bottomItems} activePath={pathname} />
+        )}
+      </ProtectedLayout>
+    </div>
   );
 };
 
@@ -258,6 +283,73 @@ const Logo = ({ collapsed, className, logo }: LogoProps) => {
         src={collapsed ? logo.collapsed : logo.expanded}
         alt="Logo"
       />
+    </div>
+  );
+};
+
+function MobileTabBar({
+  items,
+  activePath,
+}: {
+  items: MenuItem[];
+  activePath: string;
+}) {
+  return (
+    <nav
+      className={clsx(
+        "fixed bottom-0 left-0 right-0 z-50",
+        "bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70",
+        "border-t border-gray-200",
+        "pt-1 pb-[calc(8px+env(safe-area-inset-bottom))]"
+      )}
+      role="navigation"
+      aria-label="Bottom Navigation"
+    >
+      <ul className="mx-auto max-w-screen-md grid grid-cols-5 gap-1 px-2">
+        {items.map((it) => {
+          const isActive = activePath === it.path;
+          console.debug(isActive);
+          return (
+            <li key={it.key ?? it.path} className="flex">
+              <Link
+                href={it.path!}
+                className={clsx(
+                  "flex-1 flex flex-col items-center justify-center",
+                  "h-14 rounded-xl",
+                  isActive
+                    ? "!text-primary-default font-medium"
+                    : "!text-gray-600"
+                )}
+              >
+                <span className="text-xl leading-none">{it.icon}</span>
+                <span className="text-[11px] leading-3 mt-1">{it.name}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+const CustomHeader = () => {
+  return (
+    <div className="flex items-center justify-between px-4 h-14 bg-primary-default text-white shadow">
+      {/* Logo */}
+      <div className="flex items-center space-x-2">
+        <img src="/images/logo.png" alt="Logo" className="h-8" />
+        <span className="font-bold text-lg">My App</span>
+      </div>
+
+      {/* Azioni lato destro */}
+      <div className="flex items-center space-x-4">
+        <button className="p-2 rounded-full hover:bg-white/10">
+          <FiBell />
+        </button>
+        <button className="p-2 rounded-full hover:bg-white/10">
+          <FiUser />
+        </button>
+      </div>
     </div>
   );
 };
