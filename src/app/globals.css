@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../styles/_tailwind.css";
+@import "../styles/_antd.css";
 
 body {
   overflow-x: hidden;

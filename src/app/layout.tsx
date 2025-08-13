@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/hooks/useAuth";
+import { ValueEnumProvider } from "@/hooks/useValueEnum";
 import { PropsWithChildren } from "react";
 import "./globals.css";
 
@@ -9,7 +10,9 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body cz-shortcut-listen="true">
-        <AuthProvider>{children}</AuthProvider>
+        <ValueEnumProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ValueEnumProvider>
       </body>
     </html>
   );

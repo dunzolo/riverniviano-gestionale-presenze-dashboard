@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const xsrfMatch = clientCookies.match(/XSRF-TOKEN=([^;]+)/);
   const xsrfToken = xsrfMatch ? decodeURIComponent(xsrfMatch[1]) : "";
 
-  return forwardToLaravel(req, "/api/update-password", {
+  return forwardToLaravel(req, "/update-password", {
     method: "POST",
     body,
     headers: {

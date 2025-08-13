@@ -1,0 +1,137 @@
+section.ant-layout {
+  min-height: 100vh !important;
+}
+
+/**
+* We hide the buttons to freeze the columns at the beginning/end of the table.
+* We are forced to do it with css because there are no props to do it and those buttons return errors when clicked.
+* In the future it would be useful to understand if there is a better way to do this
+*/
+
+.ant-pro-table-column-setting-overlay
+  .ant-pro-table-column-setting-list-item-option {
+  display: none !important;
+}
+
+/**
+* We use these rules because in the ProDescription,
+* the label is too far away from the content,
+* and visually, it does not look good.
+*/
+
+.ant-descriptions-view .ant-descriptions-item {
+  padding-bottom: 4px !important;
+}
+
+.ant-descriptions-item-container .ant-descriptions-item-content {
+  display: block !important;
+  padding-bottom: 16px !important;
+}
+
+/* To stack the ProCard components in a column when they overflow. */
+.ant-pro-card-body {
+  @apply flex-wrap gap-y-6;
+}
+
+/* remove margin bottom from form fields */
+.ant-form-item {
+  @apply !mb-0;
+}
+
+.expired-color td {
+  @apply !bg-red-50;
+}
+
+.expiring-color td {
+  @apply !bg-amber-50;
+}
+
+/** force drawer max width to prevent the drawer leaving the screen from mobile  */
+.ant-drawer-content-wrapper {
+  @apply !max-w-full;
+}
+
+.ant-menu-item-divider {
+  @apply !bg-white/30;
+}
+
+/** change antd title card design */
+.ant-pro-card-title {
+  @apply !font-bold;
+}
+
+.custom-statistic-card .ant-pro-statistic-card-content {
+  @apply justify-between;
+}
+
+.nested-table-without-indent .ant-table {
+  @apply !ml-0;
+}
+
+.ant-page-header-heading-title {
+  @apply !text-primary-default;
+}
+
+.ant-color-picker-trigger[mode="read"] {
+  @apply !cursor-default !border-inherit;
+}
+
+/**
+* Sui form in readonly cambiamo la formattazione delle label
+* e nascondiamo l'* del requeired
+*/
+.df-ant-readonly .ant-form-item-label label::before {
+  @apply !hidden;
+}
+
+.df-ant-readonly .ant-form-item-label label {
+  @apply font-bold !text-gray-700;
+}
+
+/**
+* Abilitiamo le selezione sui bottoni di antd, altrimenti non è possibile
+* fare il copia/incolla, utile ad esempio sui button di dettaglio
+*/
+.ant-btn {
+  user-select: auto !important;
+}
+
+/**
+* Aumentiamo leggermente la dimensione delle icone nel sider (menu laterale)
+*/
+.ant-pro-base-menu-inline-item-icon {
+  font-size: 1.2em;
+}
+
+.ant-table-no-radius-wrapper
+  .ant-table-no-radius-small
+  .ant-table-no-radius-container
+  table
+  > thead
+  > tr
+  > * {
+  border-radius: 0px !important;
+}
+
+.ant-table-no-radius-wrapper .ant-table-no-radius-tbody > tr > th,
+.ant-table-no-radius-wrapper .ant-table-no-radius-tbody > tr > td {
+  border: none !important;
+}
+
+.ant-table-no-radius-wrapper .ant-table-no-radius {
+  border-end-start-radius: 20px !important;
+  border-end-end-radius: 20px !important;
+}
+
+.ant-table-no-radius-row td:first-child.ant-table-no-radius-cell-row-hover {
+  border-end-start-radius: 6px !important;
+  border-end-end-radius: 6px !important;
+}
+
+.ant-menu-submenu-placement-rightTop {
+  @apply !p-0;
+}
+
+.ant-picker-panels {
+  @apply flex-col md:flex-row;
+}

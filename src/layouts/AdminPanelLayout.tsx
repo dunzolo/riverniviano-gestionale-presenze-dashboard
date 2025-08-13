@@ -308,7 +308,6 @@ function MobileTabBar({
       <ul className="mx-auto max-w-screen-md grid grid-cols-5 gap-1 px-2">
         {items.map((it) => {
           const isActive = activePath === it.path;
-          console.debug(isActive);
           return (
             <li key={it.key ?? it.path} className="flex">
               <Link

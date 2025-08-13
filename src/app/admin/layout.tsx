@@ -49,7 +49,7 @@ export default function Layout({ children }: PropsWithChildren) {
     },
     {
       role_names: ["full-access"],
-      path: `/admin/user-admins`,
+      path: `/admin/users`,
       icon: <FiUser />,
       name: "Utenti",
       bottom: true,

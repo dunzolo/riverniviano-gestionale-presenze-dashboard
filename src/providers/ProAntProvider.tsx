@@ -1,7 +1,16 @@
+import { AdvancedDescription } from "@/components/Descriptions/AdvancedDescription";
 import { defaultFont } from "@/font";
+import { useValueEnum } from "@/hooks/useValueEnum";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ProAliasToken, ProConfigProvider } from "@ant-design/pro-components";
+import {
+  ProAliasToken,
+  ProConfigProvider,
+  ProFieldFCRenderProps,
+  ProFieldProps,
+  ProFormSelect,
+  ProRenderFieldPropsType,
+} from "@ant-design/pro-components";
 import { App as AntdApp, ConfigProvider } from "antd";
 import it_IT from "antd/locale/it_IT";
 import { ReactNode } from "react";
@@ -34,6 +43,29 @@ export const getPropertyValue = (property: string) => {
 };
 
 export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
+  const { valueEnum } = useValueEnum();
+
+  const valueTypeMap: Record<string, ProRenderFieldPropsType> = {
+    boolean: {
+      render: AdvancedDescription.Boolean,
+      renderFormItem: (_, props: ProFieldFCRenderProps) => (
+        <ProFormSelect
+          valueEnum={valueEnum.boolean}
+          proFieldProps={props as ProFieldProps}
+        />
+      ),
+    },
+    reverseBoolean: {
+      render: AdvancedDescription.ReverseBoolean,
+      renderFormItem: (_, props: ProFieldFCRenderProps) => (
+        <ProFormSelect
+          valueEnum={valueEnum.reverseBoolean}
+          proFieldProps={props as ProFieldProps}
+        />
+      ),
+    },
+  };
+
   const theme = {
     fontFamily: defaultFont.style.fontFamily,
     ...props.theme,
@@ -85,7 +117,7 @@ export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
             },
           }}
         >
-          <ProConfigProvider token={theme}>
+          <ProConfigProvider token={theme} valueTypeMap={valueTypeMap}>
             <AntdApp>{children}</AntdApp>
           </ProConfigProvider>
         </ConfigProvider>

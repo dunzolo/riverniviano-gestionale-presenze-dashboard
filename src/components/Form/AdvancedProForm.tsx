@@ -4,14 +4,16 @@ import { useApi } from "@/hooks/useApi";
 import { FormLoadingProvider, useFormLoading } from "@/hooks/useFormLoading";
 import { Item, Values } from "@/types";
 import {
+  FormListContext,
   ProForm,
   ProFormInstance,
   ProFormProps,
 } from "@ant-design/pro-components";
 import { App } from "antd";
+import { NamePath } from "antd/es/form/interface";
 import clsx from "clsx";
 import _, { isArray } from "lodash";
-import { ReactNode, RefObject, useRef, useState } from "react";
+import { ReactNode, RefObject, useContext, useRef, useState } from "react";
 
 /**
  * Set errors in form,
@@ -138,6 +140,27 @@ export const removeErrors = (ref: RefObject<ProFormInstance>, data?: Item) => {
   // Le select multiple arrivano ad avere result come array ma il name in realtà è solo in prima posizione
   // TODO: controllare in caso di select multipla in dynamic form
   if (isArray(result)) form.setFields([{ name: result[0], errors: [] }]);
+};
+
+/**
+ * We created this hook to get the field name
+ * when we are in a repeater form
+ */
+export const useFieldPath = (name: NamePath | undefined) => {
+  const listContext = useContext(FormListContext);
+
+  // no name is provided
+  if (!name) return [];
+
+  // we are under form list (repeater)
+  if (listContext.listName) {
+    return [...listContext?.listName, name];
+  }
+
+  if (!Array.isArray(name)) return [name];
+
+  // we are outside repeater
+  return name;
 };
 
 export interface FormProps extends ProFormProps {
