@@ -1,17 +1,24 @@
 import { forwardToLaravel } from "@/lib/laravelProxy";
+import type { NextRequest } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  return forwardToLaravel(req, `/users/${params.id}`);
+type Params = Promise<{ id: string }>;
+
+export async function GET(req: NextRequest, { params }: { params: Params }) {
+  const { id } = await params;
+  return forwardToLaravel(req, `/users/${id}`);
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  return forwardToLaravel(req, `/users/${params.id}`);
+export async function PUT(req: NextRequest, { params }: { params: Params }) {
+  const { id } = await params;
+  return forwardToLaravel(req, `/users/${id}`);
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  return forwardToLaravel(req, `/users/${params.id}`);
+export async function PATCH(req: NextRequest, { params }: { params: Params }) {
+  const { id } = await params;
+  return forwardToLaravel(req, `/users/${id}`);
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  return forwardToLaravel(req, `/users/${params.id}`);
+export async function DELETE(req: NextRequest, { params }: { params: Params }) {
+  const { id } = await params;
+  return forwardToLaravel(req, `/users/${id}`);
 }
