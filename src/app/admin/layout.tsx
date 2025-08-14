@@ -6,7 +6,7 @@ import { MenuItem } from "@/types";
 import { Spin } from "antd";
 import { useRouter } from "next/navigation";
 import { PropsWithChildren, useEffect } from "react";
-import { FiHome, FiUser } from "react-icons/fi";
+import { FiCalendar, FiHome, FiUser } from "react-icons/fi";
 
 export default function Layout({ children }: PropsWithChildren) {
   const { user, isLoading } = useUser();
@@ -52,6 +52,13 @@ export default function Layout({ children }: PropsWithChildren) {
       path: `/admin/users`,
       icon: <FiUser />,
       name: "Utenti",
+      bottom: true,
+    },
+    {
+      role_names: ["full-access"],
+      path: `/admin/seasons`,
+      icon: <FiCalendar />,
+      name: "Stagioni",
       bottom: true,
     },
   ];

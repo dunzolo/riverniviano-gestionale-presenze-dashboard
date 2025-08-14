@@ -1,6 +1,8 @@
 import { AdvancedDescription } from "@/components/Descriptions/AdvancedDescription";
+import { ApiSelectForFilters } from "@/components/Form/Fields/ApiSelect";
 import { defaultFont } from "@/font";
 import { useValueEnum } from "@/hooks/useValueEnum";
+import { pluralize } from "@/utils/util";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import {
@@ -45,6 +47,19 @@ export const getPropertyValue = (property: string) => {
 export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
   const { valueEnum } = useValueEnum();
 
+  const ApiSelectFilter = (_: any, props: ProFieldFCRenderProps) => {
+    const [key] = props.fieldProps.id?.split("_");
+
+    return (
+      <ApiSelectForFilters
+        url={`/${pluralize(key)}/all`}
+        {...props}
+        mode="single"
+        {...props.fieldProps}
+      />
+    );
+  };
+
   const valueTypeMap: Record<string, ProRenderFieldPropsType> = {
     boolean: {
       render: AdvancedDescription.Boolean,
@@ -63,6 +78,10 @@ export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
           proFieldProps={props as ProFieldProps}
         />
       ),
+    },
+    pluck: {
+      render: AdvancedDescription.Pluck,
+      renderFormItem: ApiSelectFilter,
     },
   };
 

@@ -1,5 +1,6 @@
+import { Values } from "@/types";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
-import { useToken } from "@ant-design/pro-components";
+import { ProFieldFCRenderProps, useToken } from "@ant-design/pro-components";
 
 const DescriptionBoolean = (bool: any) => {
   const { token } = useToken();
@@ -13,9 +14,21 @@ const DescriptionReverseBoolean = (bool: any) => {
   return <CheckCircleFilled style={{ color: token.colorSuccess }} />;
 };
 
+const DfDescriptionPluck = (
+  items: Values[],
+  fieldProps: ProFieldFCRenderProps
+) => {
+  const key = fieldProps.fieldProps?.keyName ?? "name";
+  const renderItem =
+    fieldProps.fieldProps.renderItem ?? ((value: any) => value);
+
+  return <>{items.map((item) => renderItem(item[key])).join(", ")}</>;
+};
+
 const AdvancedDescription = {
   Boolean: DescriptionBoolean,
   ReverseBoolean: DescriptionReverseBoolean,
+  Pluck: DfDescriptionPluck,
 };
 
 export { AdvancedDescription };
