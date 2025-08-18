@@ -7,6 +7,7 @@ import { Spin } from "antd";
 import { useRouter } from "next/navigation";
 import { PropsWithChildren, useEffect } from "react";
 import { FiCalendar, FiHome, FiUser } from "react-icons/fi";
+import { IoShirtOutline } from "react-icons/io5";
 
 export default function Layout({ children }: PropsWithChildren) {
   const { user, isLoading } = useUser();
@@ -59,6 +60,13 @@ export default function Layout({ children }: PropsWithChildren) {
       path: `/admin/seasons`,
       icon: <FiCalendar />,
       name: "Stagioni",
+      bottom: true,
+    },
+    {
+      role_names: ["full-access"],
+      path: `/admin/players`,
+      icon: <IoShirtOutline />,
+      name: "Atleti",
       bottom: true,
     },
   ];

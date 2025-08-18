@@ -1,5 +1,8 @@
+// src/lib/laravelProxy.ts
+import type { NextRequest } from "next/server";
+
 export async function forwardToLaravel(
-  req: Request,
+  req: Request | NextRequest,
   laravelPath: string,
   options: RequestInit = {}
 ): Promise<Response> {
@@ -12,35 +15,44 @@ export async function forwardToLaravel(
   headers.set("Accept", "application/json");
   headers.set("X-Requested-With", "XMLHttpRequest");
 
-  // 🔥 forward cookie del client
+  // Cookie dal client → backend (Sanctum stateful)
   const cookies = incoming.get("cookie");
   if (cookies) headers.set("Cookie", cookies);
 
-  // 🔥 forward content-type se presente (POST/PATCH/DELETE)
-  const ct = incoming.get("content-type");
-  if (ct && !headers.has("Content-Type")) headers.set("Content-Type", ct);
+  // Forward Content-Type SOLO se esiste già (es. multipart con boundary)
+  const ctIncoming = incoming.get("content-type");
+  if (ctIncoming && !headers.has("Content-Type")) {
+    headers.set("Content-Type", ctIncoming);
+  }
 
-  // 🔥 importantissimo per Sanctum (stateful)
+  // Origin/Referer (utile per Sanctum CORS stateful)
   const origin = incoming.get("origin");
   if (origin) headers.set("Origin", origin);
   const referer = incoming.get("referer");
   if (referer) headers.set("Referer", referer);
-  headers.set("X-Requested-With", "XMLHttpRequest");
 
-  // 🔥 CSRF pass-through (serve per mutate)
+  // CSRF pass-through (se presente)
   const xsrf = incoming.get("x-xsrf-token");
   if (xsrf) headers.set("X-XSRF-TOKEN", xsrf);
 
-  // Body passthrough se non fornito esplicitamente
+  // Body pass-through (IMPORTANTISSIMO: non consumare lo stream)
   let body = options.body;
   if (!body && method !== "GET" && method !== "HEAD") {
-    body = await req.text();
+    body = (req as any).body; // ReadableStream
   }
 
   const url = `${backend}${laravelPath}${search}`;
-  const res = await fetch(url, { method, headers, body, redirect: "manual" });
+  const init: any = { method, headers, redirect: "manual" };
 
-  // Propaga Set-Cookie (compat Node/Undici)
+  if (body && method !== "GET" && method !== "HEAD") {
+    init.body = body;
+    // necessario quando si passa uno stream (multipart/form-data)
+    init.duplex = "half";
+  }
+
+  const res = await fetch(url, init);
+
+  // Propaga Set-Cookie
   const setCookies =
     (res.headers as any).getSetCookie?.() ??
     (res.headers.get("set-cookie") ? [res.headers.get("set-cookie") as string] : []);
@@ -51,15 +63,13 @@ export async function forwardToLaravel(
   const resCT = res.headers.get("content-type");
   if (resCT) outHeaders.set("content-type", resCT);
 
-  // Se Laravel ha risposto con un redirect HTML (302/303/…),
-  // convertiamo in 204 per la SPA (niente body "Redirecting…")
   if (res.status >= 300 && res.status < 400) {
     return new Response(null, { status: 204, headers: outHeaders });
   }
-  
   if (res.status === 204) {
     return new Response(null, { status: res.status, headers: outHeaders });
   }
+
   const text = await res.text();
   return new Response(text, { status: res.status, headers: outHeaders });
 }
