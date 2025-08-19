@@ -10,20 +10,50 @@ export const Table = () => {
       columns={[
         {
           title: "Cognome",
-          dataIndex: "surname",
+          dataIndex: ["player", "surname"],
           search: true,
           sorter: true,
         },
         {
           title: "Nome",
-          dataIndex: "name",
+          dataIndex: ["player", "name"],
+          search: true,
+          sorter: true,
+        },
+        {
+          title: "Stagione",
+          dataIndex: ["season", "name"],
+          valueType: "apiSelect",
+          fieldProps: {
+            url: "/api/seasons/all",
+            name: "season_id",
+            mode: "multiple",
+          },
+          search: true,
+          sorter: true,
+        },
+        {
+          title: "Categoria",
+          dataIndex: ["team", "name"],
+          valueType: "apiSelect",
+          fieldProps: {
+            url: "/api/teams/all",
+            name: "team_id",
+            mode: "multiple",
+          },
+          search: true,
+          sorter: true,
+        },
+        {
+          title: "Etichetta",
+          dataIndex: "label",
           search: true,
           sorter: true,
         },
         {
           title: "Attivo",
           align: "center",
-          dataIndex: "active",
+          dataIndex: ["player", "active"],
           valueType: "boolean",
           search: true,
         },

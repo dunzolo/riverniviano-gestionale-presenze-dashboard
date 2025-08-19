@@ -83,6 +83,10 @@ export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
       render: AdvancedDescription.Pluck,
       renderFormItem: ApiSelectFilter,
     },
+    apiSelect: {
+      render: (node) => node,
+      renderFormItem: ApiSelectFilter,
+    },
   };
 
   const theme = {

@@ -63,7 +63,7 @@ export default function Layout({ children }: PropsWithChildren) {
       bottom: true,
     },
     {
-      role_names: ["full-access"],
+      role_names: ["full-access", "operator"],
       path: `/admin/players`,
       icon: <IoShirtOutline />,
       name: "Atleti",
