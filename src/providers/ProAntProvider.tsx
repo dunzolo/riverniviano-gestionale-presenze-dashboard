@@ -1,8 +1,9 @@
 import { AdvancedDescription } from "@/components/Descriptions/AdvancedDescription";
+import { AdvancedProFormDateRange } from "@/components/Form/Fields/AdvancedProFormDateRange";
 import { ApiSelectForFilters } from "@/components/Form/Fields/ApiSelect";
 import { defaultFont } from "@/font";
 import { useValueEnum } from "@/hooks/useValueEnum";
-import { pluralize } from "@/utils/util";
+import { getDataIndexFromCommaNotation, pluralize } from "@/utils/util";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import {
@@ -86,6 +87,19 @@ export const ProAntProvider = ({ children, ...props }: ProAntProviderProps) => {
     apiSelect: {
       render: (node) => node,
       renderFormItem: ApiSelectFilter,
+    },
+    proDate: {
+      render: AdvancedDescription.Date,
+      renderFormItem: (_, props) => {
+        return (
+          <AdvancedProFormDateRange
+            disableBeforeNow={false}
+            proFieldProps={props as ProFieldProps}
+            name={getDataIndexFromCommaNotation(props.proFieldKey)}
+            format="DD/MM/YYYY"
+          />
+        );
+      },
     },
   };
 

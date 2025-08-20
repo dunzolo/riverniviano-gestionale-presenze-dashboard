@@ -1,3 +1,4 @@
+import dayjs from "@/lib/dayjs";
 import { Values } from "@/types";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { ProFieldFCRenderProps, useToken } from "@ant-design/pro-components";
@@ -14,7 +15,7 @@ const DescriptionReverseBoolean = (bool: any) => {
   return <CheckCircleFilled style={{ color: token.colorSuccess }} />;
 };
 
-const DfDescriptionPluck = (
+const DescriptionPluck = (
   items: Values[],
   fieldProps: ProFieldFCRenderProps
 ) => {
@@ -25,10 +26,15 @@ const DfDescriptionPluck = (
   return <>{items.map((item) => renderItem(item[key])).join(", ")}</>;
 };
 
+const DescriptionDate = (value: any) => {
+  return value ? <>{dayjs(value).format("L")}</> : <>-</>;
+};
+
 const AdvancedDescription = {
   Boolean: DescriptionBoolean,
   ReverseBoolean: DescriptionReverseBoolean,
-  Pluck: DfDescriptionPluck,
+  Pluck: DescriptionPluck,
+  Date: DescriptionDate,
 };
 
 export { AdvancedDescription };

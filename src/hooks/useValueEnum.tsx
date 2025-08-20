@@ -1,6 +1,7 @@
 "use client";
 
 import { Values } from "@/types";
+import { TrainingDifficulty } from "@/utils/enum";
 import React from "react";
 
 interface ValueEnumProps {
@@ -45,6 +46,11 @@ export const ValueEnumProvider = ({ children }: ValueEnumProps) => {
     reverseBoolean: {
       true: "No",
       false: "Si",
+    },
+    trainingDifficulties: {
+      [TrainingDifficulty.Easy]: "Facile",
+      [TrainingDifficulty.Medium]: "Medio",
+      [TrainingDifficulty.Hard]: "Difficile",
     },
   };
 

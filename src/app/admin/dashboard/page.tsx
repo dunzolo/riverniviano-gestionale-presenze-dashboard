@@ -1,9 +1,9 @@
 "use client";
 
+import dayjs from "@/lib/dayjs";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import { App, Button, Card, Flex, List, Tag, Typography, message } from "antd";
 import axios from "axios";
-import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 
 // 👇 importa i tuoi componenti

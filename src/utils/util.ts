@@ -1,5 +1,6 @@
 import { Values } from "@/types";
 import dayjs from "dayjs";
+import { Key } from "react";
 
 export const extractRecursiveKeys = (obj: any, prefix = "") => {
   let result: any = {};
@@ -79,4 +80,17 @@ export const pluralize = (word: string): string => {
     return word;
   }
   return word + "s";
+};
+
+export const getSeparators = (language: string) => {
+  const value = new Intl.NumberFormat(language).format(1.2);
+  if (value.includes(",")) {
+    return { decimals: ",", thousands: "." };
+  }
+  return { decimals: ".", thousands: "," };
+};
+
+export const getDataIndexFromCommaNotation = (path?: Key) => {
+  if (path) return `${path}`.replace("table-field-", "").split(",");
+  return path;
 };

@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/hooks/useAuth";
 import { ValueEnumProvider } from "@/hooks/useValueEnum";
+import "@/lib/dayjs";
 import { PropsWithChildren } from "react";
 import "./globals.css";
 

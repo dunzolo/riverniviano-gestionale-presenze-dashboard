@@ -7,6 +7,7 @@ import { Spin } from "antd";
 import { useRouter } from "next/navigation";
 import { PropsWithChildren, useEffect } from "react";
 import { FiCalendar, FiHome, FiUser } from "react-icons/fi";
+import { IoIosFootball } from "react-icons/io";
 import { IoShirtOutline } from "react-icons/io5";
 
 export default function Layout({ children }: PropsWithChildren) {
@@ -67,6 +68,13 @@ export default function Layout({ children }: PropsWithChildren) {
       path: `/admin/players`,
       icon: <IoShirtOutline />,
       name: "Atleti",
+      bottom: true,
+    },
+    {
+      role_names: ["full-access", "operator"],
+      path: `/admin/sessions`,
+      icon: <IoIosFootball />,
+      name: "Attività",
       bottom: true,
     },
   ];
