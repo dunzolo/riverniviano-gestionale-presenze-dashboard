@@ -1,10 +1,16 @@
 import { useFormChangedContext } from "@/hooks/useFormChanged";
 import { createQueryString } from "@/utils/queryParams";
 import { ProCard, ProCardProps } from "@ant-design/pro-components";
-import { Tabs as AntdTabs, App, TabsProps } from "antd";
+import {
+  Tabs as AntdTabs,
+  App,
+  Segmented,
+  SegmentedProps,
+  TabsProps,
+} from "antd";
 import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PropsWithChildren, useEffect, useState } from "react";
+import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
 interface GridProps extends PropsWithChildren {
   className?: string;
@@ -167,9 +173,103 @@ const ConfirmTabs = ({
   );
 };
 
+type TabLikeItem = {
+  key: string;
+  label: React.ReactNode;
+  disabled?: boolean;
+  children?: React.ReactNode;
+};
+
+interface DfSegmentedProps
+  extends Omit<
+    SegmentedProps,
+    "options" | "onChange" | "value" | "defaultValue"
+  > {
+  /** nome base per la querystring, es: keyName="users" -> ?users_tab=... */
+  keyName?: string;
+  /** valore iniziale se non presente in query */
+  defaultActiveKey?: string;
+  /** lista “tipo Tabs” (key/label/disabled) */
+  items: TabLikeItem[];
+  /** callback con la key selezionata */
+  onChange?: (activeKey: string) => void;
+  /** mapper custom per la querystring se vuoi un nome diverso dal suffisso _tab */
+  queryParamNameBuilder?: (keyName: string) => string;
+}
+
+const DfSegmented = ({
+  keyName,
+  defaultActiveKey,
+  items,
+  onChange,
+  queryParamNameBuilder = (k) => `${k}_tab`,
+  ...props
+}: DfSegmentedProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const paramName = keyName ? queryParamNameBuilder(keyName) : undefined;
+
+  // valore iniziale: dalla query se presente, altrimenti defaultActiveKey, altrimenti il primo item
+  const initialActiveKey = useMemo(() => {
+    if (paramName) {
+      const fromQuery = searchParams.get(paramName);
+      if (fromQuery) return fromQuery;
+    }
+    if (defaultActiveKey) return defaultActiveKey;
+    return items[0]?.key;
+  }, [paramName, searchParams, defaultActiveKey, items]);
+
+  // le options per Segmented
+  const options = useMemo(
+    () =>
+      items.map((it) => ({
+        label: it.label,
+        value: it.key, // importante: value === key
+        disabled: it.disabled,
+      })),
+    [items]
+  );
+
+  const handleChange = (value: string | number) => {
+    const activeKey = String(value);
+
+    if (paramName) {
+      const newQuery = createQueryString(searchParams, {
+        [paramName]: activeKey,
+      });
+      router.push(`${pathname}?${newQuery}`);
+    }
+
+    onChange?.(activeKey);
+  };
+
+  const activeItem = items.find((it) => it.key === initialActiveKey);
+
+  return (
+    <>
+      <Segmented
+        block
+        size="large"
+        {...props}
+        options={items.map((it) => ({
+          label: it.label,
+          value: it.key,
+          disabled: it.disabled,
+        }))}
+        value={initialActiveKey}
+        onChange={handleChange}
+      />
+      <div className="mt-4">{activeItem?.children}</div>
+    </>
+  );
+};
+
 export const Section = {
   Grid,
   Card,
   Tabs,
   ConfirmTabs,
+  DfSegmented,
 };

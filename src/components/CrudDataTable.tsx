@@ -245,16 +245,15 @@ export const CrudDataTable = ({
 
     if (tabs && key) {
       return (
-        <ItemLoader url={itemUrl}>
+        <ItemLoader url={itemUrl} onItemChange={setItem}>
           {(item, mutate) => {
             const _tabs = isArray(tabs) ? tabs : tabs(item);
-
             return (
               <FormChangedContextProvider>
                 <Tabs
                   keyName={keyName ?? cleanedUpUrl}
-                  itemUrl={itemUrl}
-                  setItem={setItem}
+                  // 👇 passiamo i dati invece di rilanciare ItemLoader
+                  item={item}
                   mutate={mutate}
                   baseForm={baseForm}
                   tabs={_tabs}
@@ -419,17 +418,18 @@ export const CrudDataTable = ({
 
 const Tabs = ({
   keyName,
-  itemUrl,
-  setItem,
+  item,
   mutate,
   baseForm,
   tabs,
 }: {
   keyName?: string;
-  itemUrl: string;
-  setItem: (value: SetStateAction<Values | undefined>) => void;
+  item: Values | undefined;
   mutate: Function;
-  baseForm: (initialValues: Values | undefined, mutate?: Function) => ReactNode;
+  baseForm: (
+    initialValues: Values | undefined,
+    mutate?: Function
+  ) => React.ReactNode;
   tabs: Tab[];
 }) => {
   return (
@@ -440,28 +440,13 @@ const Tabs = ({
         {
           key: "detail",
           label: "Dettaglio",
-          children: (
-            <ItemLoader url={itemUrl}>
-              {(item) => {
-                setItem(item);
-                return baseForm(item, mutate);
-              }}
-            </ItemLoader>
-          ),
+          children: baseForm(item, mutate), // 👈 usa direttamente l'item passato
         },
-        ...tabs.map((tab) => {
-          return {
-            ...tab,
-            children: (
-              <ItemLoader url={itemUrl}>
-                {(item) => {
-                  setItem(item);
-                  return tab.children;
-                }}
-              </ItemLoader>
-            ),
-          };
-        }),
+        ...tabs.map((tab) => ({
+          ...tab,
+          // 👇 se il tab usa l'item, ora ce l'ha già dal contesto esterno
+          children: tab.children,
+        })),
       ]}
     />
   );

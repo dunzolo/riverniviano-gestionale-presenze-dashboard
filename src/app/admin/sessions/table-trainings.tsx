@@ -5,13 +5,22 @@ import { SessionForm } from "./form";
 export const TableTrainings = () => {
   return (
     <CrudDataTable
+      keyName="trainings_detail"
       paged={false}
       form={(props) => (
         <SessionForm sessionType={SessionType.Training} {...props} />
       )}
       url="/api/sessions"
       params={{ type: SessionType.Training }}
-      actionOnSave="list"
+      tabs={(item) => {
+        return [
+          {
+            label: "Referenti",
+            key: "referents",
+            children: <div>ciao</div>,
+          },
+        ];
+      }}
       columns={[
         {
           width: 100,
