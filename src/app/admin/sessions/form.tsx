@@ -1,14 +1,10 @@
 import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
 import { AdvencedProFormDatePicker } from "@/components/Form/Fields/AdvencedProFormDatePicker";
 import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
-import { FilesUploader } from "@/components/Form/Fields/FilesUploader";
-import { NumberInput } from "@/components/Form/Fields/NumberInput";
-import { TextEditor } from "@/components/Form/Fields/TextEditor";
 import { Section } from "@/components/Section";
 import { useApi } from "@/hooks/useApi";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { useValueEnum } from "@/hooks/useValueEnum";
 import { SessionType } from "@/utils/enum";
 import {
   ProForm,
@@ -16,6 +12,8 @@ import {
   ProFormSelect,
   ProFormText,
 } from "@ant-design/pro-components";
+import { MatchFields } from "./match-fields";
+import { TrainingFields } from "./training-fields";
 
 interface SessionFormProps extends FormProps {
   sessionType: SessionType;
@@ -33,36 +31,34 @@ export const SessionForm = ({
 
   const isEdit = !!initialValues?.id;
 
+  const formRequest = async () => {
+    let base = { ...initialValues };
+
+    if (isOperator && !initialValues?.id) {
+      const seasonData = await makeRequest(`/api/seasons/all`, "get");
+      const seasonTeamData = await makeRequest(`/api/season-teams/all`, "get", {
+        filter: {
+          season_id: seasonData.data[0].value,
+          user_id: user?.id,
+        },
+      });
+
+      base = {
+        ...base,
+        season_team: { season_id: seasonData.data[0].value },
+        season_team_id: seasonTeamData.data[0].value,
+        user_id: user?.id,
+      };
+    }
+
+    return base;
+  };
+
   return (
     <AdvancedProForm
       {...props}
       initialValues={{ ...initialValues }}
-      request={async () => {
-        let base = { ...initialValues };
-
-        if (isOperator && !initialValues?.id) {
-          const seasonData = await makeRequest(`/api/seasons/all`, "get");
-          const seasonTeamData = await makeRequest(
-            `/api/season-teams/all`,
-            "get",
-            {
-              filter: {
-                season_id: seasonData.data[0].value,
-                user_id: user?.id,
-              },
-            }
-          );
-
-          base = {
-            ...base,
-            season_team: { season_id: seasonData.data[0].value },
-            season_team_id: seasonTeamData.data[0].value,
-            user_id: user?.id,
-          };
-        }
-
-        return base;
-      }}
+      request={formRequest}
     >
       <FormContent
         isEdit={isEdit}
@@ -81,12 +77,10 @@ interface FormContentProps {
 
 const FormContent = ({ isEdit, sessionType, isOperator }: FormContentProps) => {
   const [form] = ProForm.useForm();
-  const { valueEnum } = useValueEnum();
 
   return (
     <Section.Grid>
       <ProFormText name="type" label="Tipo" initialValue={sessionType} hidden />
-
       <Section.Card title="Dati generali">
         <Section.Grid className="md:grid-cols-4">
           {/* STAGIONE */}
@@ -107,9 +101,9 @@ const FormContent = ({ isEdit, sessionType, isOperator }: FormContentProps) => {
               const label = "Categoria";
               const season_id = season_team?.season_id;
 
-              // if (!season_id) {
-              //   return <ProFormSelect disabled label={label} />;
-              // }
+              if (!season_id) {
+                return <ProFormSelect disabled label={label} />;
+              }
 
               return (
                 <ApiSelect
@@ -163,105 +157,8 @@ const FormContent = ({ isEdit, sessionType, isOperator }: FormContentProps) => {
         </Section.Grid>
       </Section.Card>
 
-      <Section.Grid className="md:grid-cols-3">
-        <Section.Grid className="md:col-span-2">
-          {/* DATI SPECIFICI */}
-          <Section.Card title="Dati specifici">
-            <Section.Grid className="md:grid-cols-2">
-              {/* TITOLO */}
-              <ProFormText
-                name={["training", "title"]}
-                label="Titolo"
-                required
-              />
-
-              <Section.Grid className="md:grid-cols-2">
-                {/* DURATA */}
-                <NumberInput
-                  name={["training", "duration"]}
-                  label="Durata"
-                  fieldProps={{
-                    min: 0,
-                    addonBefore: "Minuti",
-                  }}
-                  required
-                />
-
-                {/* DIFFICOLTA' */}
-                <ProFormSelect
-                  name={["training", "difficulty"]}
-                  label="Difficoltà"
-                  valueEnum={valueEnum.trainingDifficulties}
-                  required
-                />
-              </Section.Grid>
-            </Section.Grid>
-          </Section.Card>
-
-          {/* OBIETTIVI */}
-          <Section.Card title="Obiettivi">
-            <Section.Grid className="md:grid-cols-3">
-              {/* CONTENITORE */}
-              <ApiSelect
-                name={["training", "container_id"]}
-                label="Contenitore"
-                url="/api/training-containers/all"
-                required
-              />
-
-              {/* SCOPO */}
-              <ApiSelect
-                name={["training", "scope_id"]}
-                label="Scopo"
-                url="/api/training-scopes/all"
-                required
-              />
-
-              {/* FOCUS */}
-              <ProFormText name="focus" label="Focus" />
-            </Section.Grid>
-          </Section.Card>
-        </Section.Grid>
-
-        <Section.Card title="Allegato">
-          {/* ALLEGATO */}
-          <FilesUploader
-            name={"training-attachment"}
-            label={undefined}
-            multiple={false}
-            draggable
-            availableExtensions={["pdf", "png", "jpg", "jpeg"]}
-            maxFileSize={20 * 1024} // 20 MB in KB
-          />
-        </Section.Card>
-      </Section.Grid>
-
-      {/* METADATA */}
-      <Section.Card title="Metadata">
-        <Section.Grid className="md:grid-cols-2">
-          <TextEditor
-            name={["training", "meta", "preparation"]}
-            label="Preparazione"
-          />
-          <TextEditor
-            name={["training", "meta", "organization"]}
-            label="Organizzazione"
-          />
-          <TextEditor name={["training", "meta", "rules"]} label="Regole" />
-          <TextEditor
-            name={["training", "meta", "description"]}
-            label="Descrizione"
-          />
-          <TextEditor
-            name={["training", "meta", "variants"]}
-            label="Varianti"
-          />
-          <TextEditor
-            name={["training", "meta", "trainer_topics"]}
-            label="Temi allenatore"
-          />
-        </Section.Grid>
-      </Section.Card>
+      {sessionType === SessionType.Training && <TrainingFields />}
+      {sessionType === SessionType.Match && <MatchFields />}
     </Section.Grid>
   );
 };

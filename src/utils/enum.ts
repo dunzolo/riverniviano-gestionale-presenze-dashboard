@@ -14,3 +14,14 @@ export enum TrainingDifficulty {
   Hard = "hard",
 }
 
+export enum GameCategory {
+  SingleAge = "single_age",
+  MixedAge = "mixed_age",
+}
+
+export enum GameCompetition {
+  Friendly = "friendly",
+  League = "league",
+  Tournament = "tournament",
+}
+

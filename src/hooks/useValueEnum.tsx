@@ -1,7 +1,11 @@
 "use client";
 
 import { Values } from "@/types";
-import { TrainingDifficulty } from "@/utils/enum";
+import {
+  GameCategory,
+  GameCompetition,
+  TrainingDifficulty,
+} from "@/utils/enum";
 import React from "react";
 
 interface ValueEnumProps {
@@ -51,6 +55,15 @@ export const ValueEnumProvider = ({ children }: ValueEnumProps) => {
       [TrainingDifficulty.Easy]: "Facile",
       [TrainingDifficulty.Medium]: "Medio",
       [TrainingDifficulty.Hard]: "Difficile",
+    },
+    gameCategories: {
+      [GameCategory.SingleAge]: "Puri",
+      [GameCategory.MixedAge]: "Misti",
+    },
+    gameCompetitions: {
+      [GameCompetition.Friendly]: "Amichevole",
+      [GameCompetition.League]: "Campionato",
+      [GameCompetition.Tournament]: "Torneo",
     },
   };
 
