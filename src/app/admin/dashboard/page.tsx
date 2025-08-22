@@ -86,6 +86,8 @@ export default function AthleteExcelImport({
     []
   );
 
+  console.debug("seasonId", selectedMediaId);
+
   const runImport = async () => {
     if (!seasonId) {
       message.warning("Seleziona una stagione.");

@@ -2,6 +2,7 @@
 
 import { Values } from "@/types";
 import {
+  AttendanceStatus,
   GameCategory,
   GameCompetition,
   TrainingDifficulty,
@@ -64,6 +65,12 @@ export const ValueEnumProvider = ({ children }: ValueEnumProps) => {
       [GameCompetition.Friendly]: "Amichevole",
       [GameCompetition.League]: "Campionato",
       [GameCompetition.Tournament]: "Torneo",
+    },
+    attendanceStatus: {
+      [AttendanceStatus.Present]: "Presente",
+      [AttendanceStatus.Absent]: "Assente",
+      [AttendanceStatus.Late]: "In ritardo",
+      [AttendanceStatus.Injury]: "Infortunato",
     },
   };
 

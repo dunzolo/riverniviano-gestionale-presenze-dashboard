@@ -12,6 +12,7 @@ import {
   ProFormSelect,
   ProFormText,
 } from "@ant-design/pro-components";
+import { Typography } from "antd";
 import { MatchFields } from "./match-fields";
 import { TrainingFields } from "./training-fields";
 
@@ -78,8 +79,17 @@ interface FormContentProps {
 const FormContent = ({ isEdit, sessionType, isOperator }: FormContentProps) => {
   const [form] = ProForm.useForm();
 
+  const title = isEdit
+    ? sessionType === SessionType.Training
+      ? "Modifica allenamento"
+      : "Modifica partita"
+    : sessionType === SessionType.Training
+    ? "Crea allenamento"
+    : "Crea partita";
+
   return (
     <Section.Grid>
+      <Typography.Title level={4}>{title}</Typography.Title>
       <ProFormText name="type" label="Tipo" initialValue={sessionType} hidden />
       <Section.Card title="Dati generali">
         <Section.Grid className="md:grid-cols-4">

@@ -4,19 +4,37 @@ import { useValueEnum } from "@/hooks/useValueEnum";
 import { GameCompetition, SessionType } from "@/utils/enum";
 import { Badge } from "antd";
 import { SessionForm } from "./form";
+import { TableAttendances } from "./table-attendances";
 
 export const TableMatches = () => {
   const { valueEnum } = useValueEnum();
 
   return (
     <CrudDataTable
+      keyName="matches_detail"
       paged={false}
       form={(props) => (
         <SessionForm sessionType={SessionType.Match} {...props} />
       )}
+      formProps={{
+        title: "Form allenamento",
+      }}
       url="/api/sessions"
       params={{ type: SessionType.Match }}
-      actionOnSave="list"
+      tabs={(item) => {
+        return [
+          {
+            label: "Presenze",
+            key: "attendance",
+            children: (
+              <TableAttendances
+                url={`/api/sessions/${item.id}/attendances`}
+                date={item.date}
+              />
+            ),
+          },
+        ];
+      }}
       columns={[
         {
           width: 100,

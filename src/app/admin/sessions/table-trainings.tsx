@@ -1,6 +1,7 @@
 import { CrudDataTable } from "@/components/CrudDataTable";
 import { SessionType } from "@/utils/enum";
 import { SessionForm } from "./form";
+import { TableAttendances } from "./table-attendances";
 
 export const TableTrainings = () => {
   return (
@@ -15,9 +16,14 @@ export const TableTrainings = () => {
       tabs={(item) => {
         return [
           {
-            label: "Referenti",
-            key: "referents",
-            children: <div>ciao</div>,
+            label: "Presenze",
+            key: "attendance",
+            children: (
+              <TableAttendances
+                url={`/api/sessions/${item.id}/attendances`}
+                date={item.date}
+              />
+            ),
           },
         ];
       }}

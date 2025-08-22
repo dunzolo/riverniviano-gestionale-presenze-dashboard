@@ -25,3 +25,11 @@ export enum GameCompetition {
   Tournament = "tournament",
 }
 
+export enum AttendanceStatus {
+  Present = "present",
+  Absent = "absent",
+  Injury = "injury",
+  Late = "late",
+}
+
+
