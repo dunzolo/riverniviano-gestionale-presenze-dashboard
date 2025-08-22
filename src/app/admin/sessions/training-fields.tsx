@@ -78,7 +78,7 @@ export const TrainingFields = () => {
             multiple={false}
             draggable
             availableExtensions={["pdf", "png", "jpg", "jpeg"]}
-            maxFileSize={20 * 1024} // 20 MB in KB
+            maxFileSize={10 * 1024} // 10 MB in KB
           />
         </Section.Card>
       </Section.Grid>

@@ -165,7 +165,7 @@ export const AthleteExcelImport = ({
               multiple={false}
               draggable
               availableExtensions={["xlsx", "xls", "csv"]}
-              maxFileSize={20 * 1024} // 20 MB in KB
+              maxFileSize={10 * 1024} // 10 MB in KB
               onChange={(_, files) => {
                 // appena cambia la lista (done), ricarico lo storico
                 // (può essere chiamato più volte, va benissimo)
