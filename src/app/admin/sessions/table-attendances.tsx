@@ -97,7 +97,10 @@ export const TableAttendances = ({ url, date }: TableAttendancesProps) => {
         toolbar={{
           actions: renderActions(),
         }}
-        onLoad={(rows: Values[]) => setLastData(rows ?? [])}
+        onLoad={(rows: Values[]) => {
+          setLastData(rows ?? []);
+          setLocalSelections({});
+        }}
         tableViewRender={(tProps, defaultDom) => {
           const rows = (tProps?.dataSource as any[] | undefined) ?? lastData;
           if (!rows.length) return defaultDom;

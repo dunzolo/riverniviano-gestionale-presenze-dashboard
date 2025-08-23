@@ -1,7 +1,12 @@
 "use client";
 
-import { AthleteExcelImport } from "./athlete-excel-import";
+import { PageContainer } from "@ant-design/pro-components";
+import { FormImport } from "./form-import";
 
 export default function Page() {
-  return <AthleteExcelImport />;
+  return (
+    <PageContainer>
+      <FormImport />
+    </PageContainer>
+  );
 }

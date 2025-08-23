@@ -76,7 +76,6 @@ export const TrainingSessionAttendanceList: React.FC<Props> = ({
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   /** status effettivo mostrato (db o override locale, se esiste) */
