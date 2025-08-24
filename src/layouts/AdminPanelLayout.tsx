@@ -271,8 +271,7 @@ interface LogoProps {
 
 const Logo = ({ collapsed, className, logo }: LogoProps) => {
   const width = collapsed ? 30 : 130;
-  const height = collapsed ? 30 : 29;
-
+  const height = collapsed ? 30 : 50;
   return (
     <div className={clsx("relative", className)}>
       <Image
