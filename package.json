@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "cp -r node_modules/tinymce public/tinymce"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
