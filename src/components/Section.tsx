@@ -2,9 +2,9 @@ import { useFormChangedContext } from "@/hooks/useFormChanged";
 import { createQueryString } from "@/utils/queryParams";
 import { ProCard, ProCardProps } from "@ant-design/pro-components";
 import {
+  Segmented as AntdSegmented,
   Tabs as AntdTabs,
   App,
-  Segmented,
   SegmentedProps,
   TabsProps,
 } from "antd";
@@ -197,7 +197,7 @@ interface DfSegmentedProps
   queryParamNameBuilder?: (keyName: string) => string;
 }
 
-const DfSegmented = ({
+const Segmented = ({
   keyName,
   defaultActiveKey,
   items,
@@ -249,9 +249,9 @@ const DfSegmented = ({
 
   return (
     <>
-      <Segmented
+      <AntdSegmented
         block
-        size="large"
+        size="middle"
         {...props}
         options={items.map((it) => ({
           label: it.label,
@@ -261,7 +261,7 @@ const DfSegmented = ({
         value={initialActiveKey}
         onChange={handleChange}
       />
-      <div className="mt-4">{activeItem?.children}</div>
+      {activeItem?.children}
     </>
   );
 };
@@ -271,5 +271,5 @@ export const Section = {
   Card,
   Tabs,
   ConfirmTabs,
-  DfSegmented,
+  Segmented,
 };

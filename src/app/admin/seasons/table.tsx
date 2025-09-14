@@ -1,14 +1,13 @@
 "use client";
 
 import { CrudDataTable } from "@/components/CrudDataTable";
-import { Form } from "./form";
+import { SeasonForm } from "./form";
 
 export const Table = () => {
   return (
     <CrudDataTable
-      form={Form}
+      form={SeasonForm}
       url="/api/seasons"
-      actionOnSave="list"
       columns={[
         {
           title: "Nome",

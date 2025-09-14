@@ -1,14 +1,13 @@
 "use client";
 
-import { Section } from "@/components/Section";
 import { PageContainer } from "@ant-design/pro-components";
-import { TableMatches } from "./table-matches";
 import { TableTrainings } from "./table-trainings";
 
 export default function Page() {
   return (
     <PageContainer>
-      <Section.DfSegmented
+      <TableTrainings />
+      {/* <Section.DfSegmented
         keyName="sessions"
         defaultActiveKey="training"
         items={[
@@ -19,7 +18,7 @@ export default function Page() {
           },
           { key: "matches", label: "Partite", children: <TableMatches /> },
         ]}
-      />
+      /> */}
       {/* <Section.Tabs
         keyName="sessions"
         items={[

@@ -63,7 +63,11 @@ export const MatchFields = () => {
       </Section.Card>
 
       {/* METADATA */}
-      <Section.Card title="Metadata">
+      <Section.Card
+        title="Informazioni aggiuntive"
+        collapsible
+        defaultCollapsed
+      >
         <Section.Grid className="md:grid-cols-2">
           <TextEditor
             name={["game", "meta", "description"]}

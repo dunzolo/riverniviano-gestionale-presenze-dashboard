@@ -1,35 +1,66 @@
 import { CrudDataTable, useCrudDataTable } from "@/components/CrudDataTable";
 import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
+import { AdvencedProFormDatePicker } from "@/components/Form/Fields/AdvencedProFormDatePicker";
 import { Section } from "@/components/Section";
 import { useValueEnum } from "@/hooks/useValueEnum";
 import { ProFormRadio, ProFormText } from "@ant-design/pro-components";
+import { Form } from "antd";
+import { Dayjs } from "dayjs";
 import { TeamForm } from "./team-form";
 
-export const Form = ({ title, initialValues, ...props }: FormProps) => {
+export const SeasonForm = ({ title, initialValues, ...props }: FormProps) => {
   const isEdit = !!initialValues?.id;
   return (
     <AdvancedProForm
       {...props}
       initialValues={{ ...initialValues, active: true }}
     >
-      <FormContent isEdit={isEdit} />
+      <SeasonFormContent isEdit={isEdit} />
     </AdvancedProForm>
   );
 };
 
-interface FormContentProps {
+interface SeasonFormContentProps {
   isEdit?: boolean;
 }
 
-const FormContent = ({ isEdit }: FormContentProps) => {
+const SeasonFormContent = ({ isEdit }: SeasonFormContentProps) => {
   const { valueOptions } = useValueEnum();
   const { item } = useCrudDataTable();
+
+  const form = Form.useFormInstance();
 
   return (
     <Section.Grid>
       <Section.Card title="Anagrafica">
-        <Section.Grid className="md:grid-cols-2">
+        <Section.Grid className="md:grid-cols-4">
           <ProFormText name="name" label="Nome" required />
+          <AdvencedProFormDatePicker
+            name="starts_on"
+            label="Data inizio"
+            fieldProps={{
+              picker: "month",
+              format: "MM/YYYY",
+              className: "w-full",
+              onChange: (date: Dayjs) => {
+                form.setFieldValue("starts_on", date.format("YYYY-MM-01"));
+              },
+            }}
+            required
+          />
+          <AdvencedProFormDatePicker
+            name="ends_on"
+            label="Data fine"
+            fieldProps={{
+              picker: "month",
+              format: "MM/YYYY",
+              className: "w-full",
+              onChange: (date: Dayjs) => {
+                form.setFieldValue("ends_on", date.format("YYYY-MM-01"));
+              },
+            }}
+            required
+          />
           <ProFormRadio.Group
             fieldProps={{ buttonStyle: "solid" }}
             radioType="button"

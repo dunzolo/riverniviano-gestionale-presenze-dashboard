@@ -2,6 +2,7 @@ import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
 import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
 import { Section } from "@/components/Section";
 import { useValueEnum } from "@/hooks/useValueEnum";
+import { UserTypes } from "@/utils/enum";
 import { ProFormRadio, ProFormText } from "@ant-design/pro-components";
 
 export const TeamForm = ({ title, initialValues, ...props }: FormProps) => {
@@ -37,6 +38,9 @@ const TeamFormContent = ({ isEdit }: TeamFormContentProps) => {
           name="user_ids"
           label="Allenatori"
           url="/api/users/all"
+          filters={{
+            role: UserTypes.Operator,
+          }}
           mode="multiple"
           required
         />

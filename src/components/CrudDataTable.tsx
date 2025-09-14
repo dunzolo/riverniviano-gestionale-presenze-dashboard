@@ -433,9 +433,8 @@ const Tabs = ({
   tabs: Tab[];
 }) => {
   return (
-    <Section.ConfirmTabs
+    <Section.Segmented
       keyName={keyName}
-      destroyInactiveTabPane
       items={[
         {
           key: "detail",

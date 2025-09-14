@@ -168,7 +168,8 @@ const AdminPanelLayoutContent = ({
           onCollapse={setMenuCollapsed}
           className={clsx(
             "min-h-screen",
-            isMobile && "pb-[calc(56px+env(safe-area-inset-bottom))]"
+            isMobile &&
+              "pb-[calc(56px+env(safe-area-inset-bottom))] [&_.ant-page-header]:!hidden [&_.ant-pro-layout-has-footer]:!hidden [&_.ant-pro-page-container-children-container]:!p-3"
           )}
           layout="side"
           breadcrumbRender={(items) => [
@@ -298,8 +299,7 @@ function MobileTabBar({
       className={clsx(
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70",
-        "border-t border-gray-200",
-        "pt-1 pb-[calc(8px+env(safe-area-inset-bottom))]"
+        "border-t border-gray-200"
       )}
       role="navigation"
       aria-label="Bottom Navigation"

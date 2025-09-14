@@ -1,5 +1,5 @@
 export enum UserTypes {
-  FullAccess = "full_access",
+  FullAccess = "full-access",
   Operator = "operator"
 }
 

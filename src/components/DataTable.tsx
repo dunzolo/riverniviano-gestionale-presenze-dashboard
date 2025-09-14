@@ -57,6 +57,8 @@ export interface DataTableProps
   additionalActions?(item: Item): ReactNode;
   renderDeleteButton?(item: Item): React.ReactNode;
   renderDetailButton?(item: Item): React.ReactNode;
+  renderBeforeTable?(items: Item[]): ReactNode;
+  renderAfterTable?(items: Item[]): ReactNode;
 }
 
 type Params = Values;
@@ -75,11 +77,13 @@ export const DataTable = ({
   additionalActions,
   renderDeleteButton,
   renderDetailButton,
+  renderBeforeTable,
+  renderAfterTable,
   onChange,
   children,
   ...props
 }: DataTableProps) => {
-  const { makeRequest, error } = useApi();
+  const { makeRequest, error, data } = useApi();
   const [search, setSearch] = useState<string>(defaultSearch ?? "");
   const [open, setOpen] = useState(false);
   const [filterCount, setFilterCount] = useState<number>(0);
@@ -316,6 +320,7 @@ export const DataTable = ({
   return (
     <PolicyProvider authorizations={authorizations}>
       <Section.Grid>
+        {renderBeforeTable?.(data?.data)}
         <AntdProTable
           pagination={{
             showSizeChanger: true,
@@ -346,6 +351,7 @@ export const DataTable = ({
           }
         />
         {children}
+        {renderAfterTable?.(data?.data)}
       </Section.Grid>
     </PolicyProvider>
   );
