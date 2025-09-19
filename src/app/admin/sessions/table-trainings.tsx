@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 import { SessionForm } from "./form";
-import { TableAttendances } from "./table-attendances";
+import { AttendanceForm } from "./form-attendance";
 
 export const TableTrainings = () => {
   const [open, setOpen] = useState(false);
@@ -48,20 +48,13 @@ export const TableTrainings = () => {
             </div>,
           ],
         }}
-        tabs={(item) => {
-          return [
-            {
-              label: "Presenze",
-              key: "attendance",
-              children: (
-                <TableAttendances
-                  url={`/api/sessions/${item.id}/attendances`}
-                  item={item}
-                />
-              ),
-            },
-          ];
-        }}
+        tabs={[
+          {
+            label: "Presenze",
+            key: "attendance",
+            children: <AttendanceForm />,
+          },
+        ]}
         tableViewRender={(props, defaultDom) => {
           const rows = props?.dataSource as any[] | undefined;
           if (!rows?.length) return defaultDom;
@@ -73,13 +66,6 @@ export const TableTrainings = () => {
               dataSource={rows}
               loading={props?.loading}
               grid={{ gutter: 8, column: 1 }}
-              onItem={(record: any) => {
-                return {
-                  onClick: () => {
-                    console.debug(record);
-                  },
-                };
-              }}
               className="
                 [&_.ant-pro-checkcard-content]:!py-2 
                 [&_.ant-pro-checkcard-content]:!pr-1 
