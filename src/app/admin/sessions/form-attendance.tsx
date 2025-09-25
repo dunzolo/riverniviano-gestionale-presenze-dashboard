@@ -1,5 +1,6 @@
 "use client";
 
+import { AttendanceStatusButtons } from "@/app/admin/sessions/(buttons)/AttendanceStatusButton";
 import {
   CrudDataTableFooter,
   useCrudDataTable,
@@ -8,7 +9,6 @@ import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
 import { NumberInput } from "@/components/Form/Fields/NumberInput";
 import { ItemLoader } from "@/components/ItemLoader";
 import { Section } from "@/components/Section";
-import { AttendanceStatusButtons } from "@/containers/attendances/AttendanceStatusButton";
 import { AttendanceStatus, SessionType } from "@/utils/enum";
 import { TrophyOutlined, UserOutlined } from "@ant-design/icons";
 import {

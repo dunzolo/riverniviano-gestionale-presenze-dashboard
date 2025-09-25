@@ -252,7 +252,6 @@ export const CrudDataTable = ({
               <FormChangedContextProvider>
                 <Tabs
                   keyName={keyName ?? cleanedUpUrl}
-                  // 👇 passiamo i dati invece di rilanciare ItemLoader
                   item={item}
                   mutate={mutate}
                   baseForm={baseForm}
