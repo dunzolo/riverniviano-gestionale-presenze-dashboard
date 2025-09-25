@@ -1,3 +1,6 @@
+"use client";
+
+import { useCrudDataTable } from "@/components/CrudDataTable";
 import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
 import { AdvencedProFormDatePicker } from "@/components/Form/Fields/AdvencedProFormDatePicker";
 import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
@@ -14,24 +17,21 @@ import {
   ProFormText,
 } from "@ant-design/pro-components";
 import { Typography } from "antd";
-import { MatchFields } from "./match-fields";
-import { TrainingFields } from "./training-fields";
+import { useSearchParams } from "next/navigation";
+import { MatchFields } from "./(form)/MatchFields";
+import { TrainingFields } from "./(form)/TrainingFields";
 
-interface SessionFormProps extends FormProps {
-  sessionType: SessionType;
-}
-
-export const SessionForm = ({
-  title,
-  initialValues,
-  sessionType,
-  ...props
-}: SessionFormProps) => {
-  const { isOperator, isAdmin } = useUserRoles();
+export const Form = ({ title, initialValues, ...props }: FormProps) => {
   const { user } = useUser();
+  const { item } = useCrudDataTable();
+  const { isOperator } = useUserRoles();
   const { makeRequest } = useApi();
 
   const isEdit = !!initialValues?.id;
+  const searchParams = useSearchParams();
+
+  const sessionType: SessionType =
+    item?.type ?? (searchParams.get("type") as SessionType);
 
   const formRequest = async () => {
     let base = { ...initialValues };
