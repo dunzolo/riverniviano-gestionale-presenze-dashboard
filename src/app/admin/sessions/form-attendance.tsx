@@ -1,6 +1,6 @@
 "use client";
 
-import { AttendanceStatusButtons } from "@/app/admin/sessions/(buttons)/AttendanceStatusButton";
+import { AttendanceStatusButtons } from "@/app/admin/sessions/(components)/AttendanceStatusButton";
 import {
   CrudDataTableFooter,
   useCrudDataTable,
