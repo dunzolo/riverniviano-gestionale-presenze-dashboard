@@ -11,10 +11,7 @@ import { TeamForm } from "./team-form";
 export const SeasonForm = ({ title, initialValues, ...props }: FormProps) => {
   const isEdit = !!initialValues?.id;
   return (
-    <AdvancedProForm
-      {...props}
-      initialValues={{ ...initialValues, active: true }}
-    >
+    <AdvancedProForm {...props} initialValues={{ ...initialValues }}>
       <SeasonFormContent isEdit={isEdit} />
     </AdvancedProForm>
   );
@@ -66,6 +63,7 @@ const SeasonFormContent = ({ isEdit }: SeasonFormContentProps) => {
             radioType="button"
             name="active"
             label={"Attivo"}
+            initialValue={true}
             options={valueOptions.active}
           />
         </Section.Grid>
