@@ -94,6 +94,12 @@ const SeasonFormContent = ({ isEdit }: SeasonFormContentProps) => {
                 },
               },
               {
+                title: "Squadra mista",
+                align: "center",
+                dataIndex: "mixed_age",
+                valueType: "boolean",
+              },
+              {
                 title: "Attivo",
                 align: "center",
                 dataIndex: "active",
