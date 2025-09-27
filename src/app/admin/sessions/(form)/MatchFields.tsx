@@ -1,18 +1,25 @@
+import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
 import { NumberInput } from "@/components/Form/Fields/NumberInput";
 import { TextEditor } from "@/components/Form/Fields/TextEditor";
 import { Section } from "@/components/Section";
 import { useValueEnum } from "@/hooks/useValueEnum";
-import { GameCompetition } from "@/utils/enum";
+import { GameCategory, GameCompetition } from "@/utils/enum";
 import {
   ProForm,
+  ProFormDependency,
   ProFormSelect,
   ProFormText,
 } from "@ant-design/pro-components";
 
-export const MatchFields = () => {
+interface MatchFieldsProps {
+  isEdit?: boolean;
+}
+
+export const MatchFields = ({ isEdit }: MatchFieldsProps) => {
   const { valueEnum } = useValueEnum();
 
   const competition = ProForm.useWatch(["game", "competition"]);
+  const seasonId = ProForm.useWatch(["season_team", "season_id"]);
 
   return (
     <>
@@ -53,12 +60,37 @@ export const MatchFields = () => {
             />
           )}
 
-          {/* CATEGORIA */}
+          {/* GRUPPO */}
           <ProFormSelect
             name={["game", "category"]}
             label="Gruppo"
             valueEnum={valueEnum.gameCategories}
           />
+
+          {/* CATEGORIE */}
+          <ProFormDependency name={["game", "category"]}>
+            {({ game }) => {
+              const category = game?.category;
+
+              if (category !== GameCategory.MixedAge || isEdit) {
+                return null;
+              }
+
+              return (
+                <ApiSelect
+                  name={["game", "team_ids"]}
+                  label="Categorie"
+                  url="/api/season-teams/all"
+                  filters={{
+                    season_id: seasonId,
+                  }}
+                  mode="multiple"
+                  allowClear
+                  required
+                />
+              );
+            }}
+          </ProFormDependency>
         </Section.Grid>
       </Section.Card>
 

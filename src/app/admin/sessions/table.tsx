@@ -1,6 +1,6 @@
 import { DeleteButton } from "@/components/Buttons/DeleteButton";
 import { DetailButton } from "@/components/Buttons/DetailButton";
-import { CrudDataTable } from "@/components/CrudDataTable";
+import { CrudDataTable, Tab } from "@/components/CrudDataTable";
 import { PolicyProvider } from "@/hooks/usePolicy";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Values } from "@/types";
@@ -9,12 +9,13 @@ import { createQueryString } from "@/utils/queryParams";
 import { CalendarOutlined, PlusOutlined } from "@ant-design/icons";
 import { ProList } from "@ant-design/pro-components";
 import { Button, Divider, Drawer, Tag } from "antd";
-import dayjs from "dayjs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ActionLink } from "./(actions)/ActionLink";
 import { sessionsColumns } from "./(colums)/sessionColumns";
-import { Form } from "./form";
+import { ActionLink } from "./(components)/ActionLink";
+import { MatchListTitle } from "./(components)/MatchListTitle";
+import { TrainingListTitle } from "./(components)/TrainingListTitle";
+import { SessionForm } from "./form";
 import { AttendanceForm } from "./form-attendance";
 
 const URL = "sessions";
@@ -44,6 +45,27 @@ export const Table = () => {
     setOpen(false);
   };
 
+  const getTabs = (item: Values) => {
+    const allTabs: Record<string, Tab> = {
+      attendance: {
+        key: "attendance",
+        label: "Presenze",
+        children: <AttendanceForm />,
+      },
+      results: {
+        key: "results",
+        label: "Risultati",
+        children: <>risultati</>,
+      },
+    };
+
+    if (item.type == SessionType.Training) {
+      return ["attendance"].map((key) => allTabs[key]);
+    }
+
+    return ["attendance", "results"].map((key) => allTabs[key]);
+  };
+
   return (
     <>
       <CrudDataTable
@@ -51,7 +73,7 @@ export const Table = () => {
         hideCreateButton
         url={API_URL}
         className="[&_.ant-pro-card]:!bg-transparent [&_.ant-pro-card]:!border-none [&_.ant-pro-table-list-toolbar-left]:!hidden [&_.ant-pro-table-list-toolbar-right]:!w-full [&_.ant-pro-table-list-toolbar-right>div]:!w-full"
-        form={Form}
+        form={SessionForm}
         toolbar={{
           settings: [],
           actions: [
@@ -69,13 +91,7 @@ export const Table = () => {
             </div>,
           ],
         }}
-        tabs={[
-          {
-            label: "Presenze",
-            key: "attendance",
-            children: <AttendanceForm />,
-          },
-        ]}
+        tabs={(item) => getTabs(item)}
         columns={sessionsColumns}
         tableViewRender={(props, defaultDom) => {
           const rows = props?.dataSource as any[] | undefined;
@@ -99,25 +115,16 @@ export const Table = () => {
                 title: {
                   render: (_, row) => (
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col items-center">
-                          <strong>{dayjs(row.date).format("D")}</strong>
-                          <strong>
-                            {dayjs(row.date).format("MMM").toUpperCase()}
-                          </strong>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-thin">
-                            {row.training?.title}
-                          </span>
-                          <div className="flex items-center gap-2 text-gray-400">
-                            <CalendarOutlined />
-                            <span className="font-light">
-                              {dayjs(row.date).format("dddd")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      {row.type === SessionType.Training && (
+                        <TrainingListTitle
+                          date={row.date}
+                          title={row.training?.title}
+                          icon={CalendarOutlined}
+                        />
+                      )}
+                      {row.type === SessionType.Match && (
+                        <MatchListTitle data={row} />
+                      )}
                       <div className="flex items-center">
                         <PolicyProvider authorizations={row?.authorizations}>
                           <DetailButton

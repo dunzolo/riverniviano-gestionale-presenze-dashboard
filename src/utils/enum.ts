@@ -25,6 +25,12 @@ export enum GameCompetition {
   Tournament = "tournament",
 }
 
+export enum GameVenueType {
+  Home = "home",
+  Away = "away",
+  Neutral = "neutral",
+}
+
 export enum AttendanceStatus {
   Present = "present",
   Absent = "absent",

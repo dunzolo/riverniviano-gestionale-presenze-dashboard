@@ -39,7 +39,7 @@ import { FormSubmitter } from "./Form/FormSubmitter";
 import { ItemLoader } from "./ItemLoader";
 import { Section } from "./Section";
 
-interface Tab {
+export interface Tab {
   key: string;
   label: string;
   children: ReactNode;

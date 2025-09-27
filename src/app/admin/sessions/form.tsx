@@ -21,16 +21,22 @@ import { useSearchParams } from "next/navigation";
 import { MatchFields } from "./(form)/MatchFields";
 import { TrainingFields } from "./(form)/TrainingFields";
 
-export const Form = ({ ...props }: FormProps) => {
+export const SessionForm = ({ ...props }: FormProps) => {
   const { user } = useUser();
   const { item } = useCrudDataTable();
   const { isOperator } = useUserRoles();
 
   const initialValues = { ...props.initialValues };
   const isEdit = !!initialValues?.id;
+  const hasMoreTeams = user?.has_more_teams;
+  const isOperatorCreate = isOperator && !isEdit;
 
   const searchParams = useSearchParams();
   const sessionType: SessionType = item?.type ?? searchParams.get("extra_type");
+
+  if (!sessionType) {
+    return <></>;
+  }
 
   return (
     <AdvancedProForm
@@ -39,17 +45,21 @@ export const Form = ({ ...props }: FormProps) => {
         ...initialValues,
         type: sessionType,
         season_team: {
-          season_id: isOperator
-            ? user?.season_team_active.season_id
+          season_id: isOperatorCreate
+            ? user?.season_id
             : initialValues?.season_team?.season_id,
         },
-        season_team_id: isOperator
-          ? user?.season_team_active.id
+        season_team_id: isOperatorCreate
+          ? user?.season_team_id
           : initialValues?.season_team_id,
-        user_id: isOperator ? user?.id : initialValues?.user_id,
+        user_id: isOperatorCreate ? user?.id : initialValues?.user_id,
       }}
     >
-      <FormContent isEdit={isEdit} sessionType={sessionType} />
+      <FormContent
+        isEdit={isEdit}
+        sessionType={sessionType}
+        hasMoreTeams={hasMoreTeams}
+      />
     </AdvancedProForm>
   );
 };
@@ -57,11 +67,19 @@ export const Form = ({ ...props }: FormProps) => {
 interface FormContentProps {
   isEdit?: boolean;
   sessionType: SessionType;
+  hasMoreTeams?: boolean;
 }
 
-const FormContent = ({ isEdit, sessionType }: FormContentProps) => {
+const FormContent = ({
+  isEdit,
+  sessionType,
+  hasMoreTeams,
+}: FormContentProps) => {
   const { isAdmin, isOperator } = useUserRoles();
   const form = ProForm.useFormInstance();
+
+  const isMatch = sessionType === SessionType.Match;
+  const isTraining = sessionType === SessionType.Training;
 
   const config = {
     training: {
@@ -94,7 +112,7 @@ const FormContent = ({ isEdit, sessionType }: FormContentProps) => {
         <Title />
       </Typography.Title>
 
-      {/* HIDDEEN */}
+      {/* HIDDEN */}
       <ProFormText name="type" hidden />
       {isOperator && (
         <>
@@ -108,7 +126,7 @@ const FormContent = ({ isEdit, sessionType }: FormContentProps) => {
       <AdvencedProFormDatePicker name="date" label="Data" required />
 
       {/* ORA */}
-      {sessionType === SessionType.Match && (
+      {isMatch && (
         <MaskedInputHour
           name={"hour"}
           label={"Ora"}
@@ -117,6 +135,38 @@ const FormContent = ({ isEdit, sessionType }: FormContentProps) => {
           }}
           required
         />
+      )}
+
+      {isOperator && hasMoreTeams && (
+        <ProFormDependency name={["season_team", "season_id"]}>
+          {({ season_team }, ref) => {
+            const label = "Categoria";
+            const season_id = season_team?.season_id;
+
+            if (!season_id) {
+              return <ProFormSelect disabled label={label} />;
+            }
+
+            return (
+              <ApiSelect
+                name="season_team_id"
+                label="Categoria"
+                url="/api/season-teams/all"
+                filters={{ season_id, user_id: form.getFieldValue("user_id") }}
+                disabled={isEdit}
+                onChange={(_, option: any) => {
+                  // eseguo il set del campo game.category
+                  // se la sessione è di tipo partita e la categoria selezionataè di età mista
+                  if (option?.mixed_age && isMatch) {
+                    form.setFieldValue(["game", "category"], "mixed_age");
+                  }
+                }}
+                allowClear
+                required
+              />
+            );
+          }}
+        </ProFormDependency>
       )}
 
       {isAdmin && (
@@ -192,8 +242,8 @@ const FormContent = ({ isEdit, sessionType }: FormContentProps) => {
         </Section.Card>
       )}
 
-      {sessionType === SessionType.Training && <TrainingFields />}
-      {sessionType === SessionType.Match && <MatchFields />}
+      {isTraining && <TrainingFields />}
+      {isMatch && <MatchFields isEdit={isEdit} />}
     </Section.Grid>
   );
 };
