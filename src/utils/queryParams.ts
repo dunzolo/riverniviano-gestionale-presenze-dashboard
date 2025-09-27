@@ -25,3 +25,14 @@ export const createQueryString = (
 
   return params.toString();
 };
+
+export const removeParamsByPrefix = (
+  sp: URLSearchParams,
+  prefix: string
+): URLSearchParams => {
+  const params = new URLSearchParams(sp.toString());
+  for (const k of Array.from(params.keys())) {
+    if (k.startsWith(prefix)) params.delete(k);
+  }
+  return params;
+};

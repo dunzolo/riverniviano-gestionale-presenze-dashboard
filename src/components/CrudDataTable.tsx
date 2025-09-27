@@ -6,7 +6,11 @@ import {
 } from "@/hooks/useFormChanged";
 import { PolicyProvider } from "@/hooks/usePolicy";
 import { Values } from "@/types";
-import { createQueryString, deleteQueryParams } from "@/utils/queryParams";
+import {
+  createQueryString,
+  deleteQueryParams,
+  removeParamsByPrefix,
+} from "@/utils/queryParams";
 import { ActionType, PageContainer } from "@ant-design/pro-components";
 import { App, Drawer, DrawerProps, Modal, ModalProps, Spin } from "antd";
 import clsx from "clsx";
@@ -168,7 +172,10 @@ export const CrudDataTable = ({
     if (!item) {
       setItem(undefined);
       const tabName = `${keyName ?? cleanedUpUrl}_tab`;
-      const queryString = deleteQueryParams(searchParams, [
+      // 1) rimuovi tutti gli extra_* in blocco
+      const spNoExtra = removeParamsByPrefix(searchParams, "extra_");
+      // 2) usa la tua deleteQueryParams per le chiavi standard
+      const queryString = deleteQueryParams(spNoExtra, [
         internalKeyName,
         tabName,
       ]);
