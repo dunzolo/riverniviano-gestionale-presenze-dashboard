@@ -2,6 +2,7 @@ import { DeleteButton } from "@/components/Buttons/DeleteButton";
 import { DetailButton } from "@/components/Buttons/DetailButton";
 import { CrudDataTable } from "@/components/CrudDataTable";
 import { PolicyProvider } from "@/hooks/usePolicy";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Values } from "@/types";
 import { SessionType } from "@/utils/enum";
 import { createQueryString } from "@/utils/queryParams";
@@ -12,6 +13,7 @@ import dayjs from "dayjs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ActionLink } from "./(actions)/ActionLink";
+import { sessionsColumns } from "./(colums)/sessionColumns";
 import { Form } from "./form";
 import { AttendanceForm } from "./form-attendance";
 
@@ -23,12 +25,23 @@ export const Table = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { isAdmin } = useUserRoles();
+
   const [open, setOpen] = useState(false);
 
   const getHrefUrl = (item: Values | undefined) => {
     return `${pathname}?${createQueryString(searchParams, {
       [`${URL}_id`]: item?.["id"],
     })}`;
+  };
+
+  const openCreate = (extraType: SessionType) => {
+    const newQuery = createQueryString(searchParams, {
+      [`${URL}_id`]: "create",
+      extra_type: extraType,
+    });
+    router.push(`${pathname}?${newQuery}`, { scroll: true });
+    setOpen(false);
   };
 
   return (
@@ -63,6 +76,7 @@ export const Table = () => {
             children: <AttendanceForm />,
           },
         ]}
+        columns={sessionsColumns}
         tableViewRender={(props, defaultDom) => {
           const rows = props?.dataSource as any[] | undefined;
           if (!rows?.length) return defaultDom;
@@ -77,8 +91,6 @@ export const Table = () => {
               className="
                 [&_.ant-pro-checkcard-content]:!py-2 
                 [&_.ant-pro-checkcard-content]:!pr-1 
-                [&_.ant-pro-checkcard-body]:!px-4 
-                [&_.ant-pro-checkcard-body]:!pt-2 
                 [&_.ant-pro-checkcard-body]:!p-0 
                 [&_.ant-pro-checkcard-header-left]:!w-full 
                 [&_.ant-pro-checkcard-title]:!w-full 
@@ -96,7 +108,7 @@ export const Table = () => {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-thin">
-                            {row.training.title}
+                            {row.training?.title}
                           </span>
                           <div className="flex items-center gap-2 text-gray-400">
                             <CalendarOutlined />
@@ -127,52 +139,55 @@ export const Table = () => {
                   ),
                 },
                 content: {
-                  render: (_, row) => (
-                    <div className="flex items-center gap-2 w-full pb-3">
-                      <Tag>{row.season_team.season.name}</Tag>
-                      <Tag>
-                        {row.season_team.team.name} - {row.season_team.label}
-                      </Tag>
-                      <Tag>{row.user.full_name}</Tag>
-                    </div>
-                  ),
+                  render: (_, row) =>
+                    isAdmin && (
+                      <div className="flex items-center justify-between w-full sm:max-w-1/2 px-2 pb-2 text-xs font-thin">
+                        <span>{`📅 ${row.season_team.season.name}`}</span>
+                        <span>
+                          {`⚽ ${row.season_team.team.name} - ${row.season_team.label}`}
+                        </span>
+                        <span>{`👤 ${row.user.full_name}`}</span>
+                      </div>
+                    ),
                 },
                 actions: {
                   cardActionProps: "actions",
                   render: (_, row) => [
                     <div className="!flex !items-center !justify-between !w-full">
-                      <div className="pl-2 flex flex-wrap gap-1">
+                      <div className="!pl-2 !flex !gap-1">
                         <Tag
                           key="attendances_count_presents"
                           color="green"
-                          className="!mr-1 !px-1 !py-0.5"
+                          className="!px-1 !py-0.5 !m-0"
                         >
                           {row.attendances_count_presents}
                         </Tag>
                         <Tag
                           key="attendances_count_absents"
                           color="red"
-                          className="!mr-1 !px-1 !py-0.5"
+                          className="!px-1 !py-0.5 !m-0"
                         >
                           {row.attendances_count_absents}
                         </Tag>
                         <Tag
                           key="attendances_count_lates"
                           color="gold"
-                          className="!mr-1 !px-1 !py-0.5"
+                          className="!px-1 !py-0.5 !m-0"
                         >
                           {row.attendances_count_lates}
                         </Tag>
                         <Tag
                           key="attendances_count_injuries"
-                          className="!mr-1 !px-1 !py-0.5"
+                          className="!px-1 !py-0.5 !m-0"
                         >
                           {row.attendances_count_injuries}
                         </Tag>
                       </div>
-                      <div>
-                        <Tag key="scope">{row.training.scope.name}</Tag>
-                        <Tag key="container">{row.training.container.name}</Tag>
+                      <div className="!text-end">
+                        <Tag key="scope">{row.training?.scope?.name}</Tag>
+                        <Tag key="container">
+                          {row.training?.container?.name}
+                        </Tag>
                       </div>
                     </div>,
                   ],
@@ -181,84 +196,6 @@ export const Table = () => {
             />
           );
         }}
-        columns={[
-          {
-            width: 100,
-            title: "Data",
-            dataIndex: "date",
-            valueType: "proDate",
-            search: true,
-            sorter: true,
-          },
-          {
-            width: 100,
-            title: "Stagione",
-            dataIndex: ["season_team", "season", "name"],
-            valueType: "apiSelect",
-            fieldProps: {
-              url: "/api/seasons/all",
-              name: "season_id",
-              mode: "multiple",
-            },
-            search: true,
-          },
-          {
-            width: 100,
-            title: "Categoria",
-            dataIndex: ["season_team", "team", "name"],
-            valueType: "apiSelect",
-            fieldProps: {
-              url: "/api/teams/all",
-              name: "team_id",
-              mode: "multiple",
-            },
-            search: true,
-          },
-          {
-            title: "Etichetta",
-            dataIndex: ["season_team", "label"],
-            search: true,
-          },
-          {
-            title: "Allenatore",
-            dataIndex: ["user", "full_name"],
-            valueType: "apiSelect",
-            fieldProps: {
-              url: "/api/users/all",
-              name: "user_id",
-              mode: "multiple",
-            },
-            search: true,
-          },
-          {
-            title: "Titolo",
-            dataIndex: ["training", "title"],
-            detail: true,
-            search: true,
-          },
-          {
-            title: "Scopo",
-            dataIndex: ["training", "scope", "name"],
-            valueType: "apiSelect",
-            fieldProps: {
-              url: "/api/training-scopes/all",
-              name: "scope_id",
-              mode: "multiple",
-            },
-            search: true,
-          },
-          {
-            title: "Contenitore",
-            dataIndex: ["training", "container", "name"],
-            valueType: "apiSelect",
-            fieldProps: {
-              url: "/api/training-containers/all",
-              name: "container_id",
-              mode: "multiple",
-            },
-            search: true,
-          },
-        ]}
       />
 
       <Drawer
@@ -272,31 +209,15 @@ export const Table = () => {
         <ActionLink
           title="Creare una sessione di allenamento"
           description="Con obiettivi, contenitori e focus"
-          onClick={() => {
-            const newQuery = createQueryString(searchParams, {
-              [`${URL}_id`]: "create",
-              type: SessionType.Training,
-            });
-            router.push(`${pathname}?${newQuery}`, {
-              scroll: true,
-            });
-            setOpen(false);
-          }}
+          className="pt-4"
+          onClick={() => openCreate(SessionType.Training)}
         />
         <Divider />
         <ActionLink
           title="Creare una partita"
           description="Con squadra avversario e competizione"
-          onClick={() => {
-            const newQuery = createQueryString(searchParams, {
-              [`${URL}_id`]: "create",
-              type: SessionType.Match,
-            });
-            router.push(`${pathname}?${newQuery}`, {
-              scroll: true,
-            });
-            setOpen(false);
-          }}
+          className="pb-4"
+          onClick={() => openCreate(SessionType.Match)}
         />
       </Drawer>
     </>

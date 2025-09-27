@@ -1,28 +1,23 @@
 import { CalendarOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import { Button } from "antd";
+import clsx from "clsx";
 
 interface ActionLinkProps {
   title: string;
   description: string;
+  className?: string;
   onClick: () => void;
 }
 
 export const ActionLink = ({
   title,
   description,
+  className,
   onClick,
 }: ActionLinkProps) => {
   return (
-    <Link
-      href={{
-        pathname: "sessions",
-        query: {
-          sessions_id: "create",
-        },
-      }}
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-2 mt-4 px-3">
+    <div className={clsx("flex gap-2", className)}>
+      <Button type="link" onClick={onClick}>
         <CalendarOutlined
           className="text-base min-w-[36px] w-[36px] h-[36px] justify-center"
           style={{
@@ -37,7 +32,7 @@ export const ActionLink = ({
           <strong>{title}</strong>
           <div className="text-xs text-gray-500">{description}</div>
         </div>
-      </div>
-    </Link>
+      </Button>
+    </div>
   );
 };
