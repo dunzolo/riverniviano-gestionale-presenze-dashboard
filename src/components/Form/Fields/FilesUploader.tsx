@@ -127,16 +127,20 @@ export const FilesUploader = ({
       const formData = new FormData();
       formData.append("attachment", file as RcFile);
 
-      const { data } = await api.post(`${url}/${storage}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-        onUploadProgress: (event) => {
-          if (event.total) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            onProgress?.({ percent });
-          }
-        },
-      });
+      // ⚠️ NON impostare Content-Type a mano: lasciarlo a FormData (imposta lui boundary)
+      const { data } = await api.post(
+        // usa la tua rotta API *riscritta* (resta identica a prima)
+        `${url}/${storage}`, // es. "/api/attachments/public"
+        formData,
+        {
+          onUploadProgress: (event) => {
+            if (event.total)
+              onProgress?.({
+                percent: Math.round((event.loaded / event.total) * 100),
+              });
+          },
+        }
+      );
 
       afterUpload(data.data);
     } catch (error: any) {
