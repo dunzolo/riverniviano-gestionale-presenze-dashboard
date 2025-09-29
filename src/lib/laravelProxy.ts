@@ -1,18 +1,5 @@
+// src/lib/laravelProxy.ts
 import type { NextRequest } from "next/server";
-
-// Header da NON inoltrare verso upstream
-const HOP_BY_HOP = new Set([
-  "connection",
-  "keep-alive",
-  "proxy-authenticate",
-  "proxy-authorization",
-  "te",
-  "trailers",
-  "transfer-encoding",
-  "upgrade",
-  "host",
-  "content-length" // <-- importantissimo
-]);
 
 export async function forwardToLaravel(
   req: Request | NextRequest,
@@ -23,43 +10,66 @@ export async function forwardToLaravel(
   const { search } = new URL(req.url);
   const method = options.method ?? req.method;
 
-  // Copia gli header IN ARRIVO, filtrando gli hop-by-hop
+  const incoming = req.headers;
   const headers = new Headers(options.headers ?? {});
-  req.headers.forEach((value, key) => {
-    const k = key.toLowerCase();
-    if (HOP_BY_HOP.has(k)) return;
-    if (!headers.has(key)) headers.set(key, value);
-  });
-
-  // Intestazioni utili
-  if (!headers.has("Accept")) headers.set("Accept", "application/json");
+  headers.set("Accept", "application/json");
   headers.set("X-Requested-With", "XMLHttpRequest");
 
-  // NON leggere/consumare il body: passa lo stream grezzo
-  const body =
-    method === "GET" || method === "HEAD" ? undefined : (req as any).body;
+  // Cookie dal client → backend (Sanctum stateful)
+  const cookies = incoming.get("cookie");
+  if (cookies) headers.set("Cookie", cookies);
+
+  // Forward Content-Type SOLO se esiste già (es. multipart con boundary)
+  const ctIncoming = incoming.get("content-type");
+  if (ctIncoming && !headers.has("Content-Type")) {
+    headers.set("Content-Type", ctIncoming);
+  }
+
+  // Origin/Referer (utile per Sanctum CORS stateful)
+  const origin = incoming.get("origin");
+  if (origin) headers.set("Origin", origin);
+  const referer = incoming.get("referer");
+  if (referer) headers.set("Referer", referer);
+
+  // CSRF pass-through (se presente)
+  const xsrf = incoming.get("x-xsrf-token");
+  if (xsrf) headers.set("X-XSRF-TOKEN", xsrf);
+
+  // Body pass-through (IMPORTANTISSIMO: non consumare lo stream)
+  let body = options.body;
+  if (!body && method !== "GET" && method !== "HEAD") {
+    body = (req as any).body; // ReadableStream
+  }
 
   const url = `${backend}${laravelPath}${search}`;
-  const upstream = await fetch(url, {
-    method,
-    headers,
-    body,
-    ...(body ? ({ duplex: "half" } as any) : {}),
-    redirect: "manual"
-  });
+  const init: any = { method, headers, redirect: "manual" };
 
-  // Propaga Set-Cookie e gli altri header (tranne content-length)
+  if (body && method !== "GET" && method !== "HEAD") {
+    init.body = body;
+    // necessario quando si passa uno stream (multipart/form-data)
+    init.duplex = "half";
+  }
+
+  const res = await fetch(url, init);
+
+  // Propaga Set-Cookie
+  const setCookies =
+    (res.headers as any).getSetCookie?.() ??
+    (res.headers.get("set-cookie") ? [res.headers.get("set-cookie") as string] : []);
+
   const outHeaders = new Headers();
-  upstream.headers.forEach((v, k) => {
-    const key = k.toLowerCase();
-    if (key === "content-length") return;
-    if (key === "set-cookie") outHeaders.append("set-cookie", v);
-    else outHeaders.set(k, v);
-  });
+  for (const c of setCookies) outHeaders.append("set-cookie", c);
 
-  // Stream back della risposta (niente bufferizzazione)
-  return new Response(upstream.body, {
-    status: upstream.status,
-    headers: outHeaders
-  });
+  const resCT = res.headers.get("content-type");
+  if (resCT) outHeaders.set("content-type", resCT);
+
+  if (res.status >= 300 && res.status < 400) {
+    return new Response(null, { status: 204, headers: outHeaders });
+  }
+  if (res.status === 204) {
+    return new Response(null, { status: res.status, headers: outHeaders });
+  }
+
+  const text = await res.text();
+  return new Response(text, { status: res.status, headers: outHeaders });
 }
