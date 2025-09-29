@@ -75,7 +75,7 @@ export const FormImport = () => {
               key={uploaderKey}
               name="attachment"
               label="Carica file (Excel/CSV)"
-              url="/api/attachments"
+              url={`${process.env.NEXT_PUBLIC_BACKEND_URL}/attachments`}
               draggable
               availableExtensions={["xlsx", "xls", "csv"]}
               maxFileSize={10 * 1024}
