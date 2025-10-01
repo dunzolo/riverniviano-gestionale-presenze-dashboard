@@ -2,16 +2,8 @@ import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 
 const HOP_BY_HOP = new Set([
-  "connection",
-  "keep-alive",
-  "proxy-authenticate",
-  "proxy-authorization",
-  "te",
-  "trailers",
-  "transfer-encoding",
-  "upgrade",
-  "host",
-  "content-length",
+  "connection","keep-alive","proxy-authenticate","proxy-authorization",
+  "te","trailers","transfer-encoding","upgrade","host","content-length",
 ]);
 
 export async function forwardToLaravelStream(
@@ -23,6 +15,7 @@ export async function forwardToLaravelStream(
   const { search } = new URL(req.url);
   const method = options.method ?? req.method;
 
+  // 1) copia header in arrivo filtrando hop-by-hop
   const headers = new Headers(options.headers ?? {});
   req.headers.forEach((value, key) => {
     const k = key.toLowerCase();
@@ -33,23 +26,43 @@ export async function forwardToLaravelStream(
   if (!headers.has("accept")) headers.set("accept", "application/json");
   headers.set("x-requested-with", "XMLHttpRequest");
 
-  // ⬇️ QUI la fix: cookies() è async
-  const jar = await cookies(); // <-- PRIMA era: const jar = cookies();
-  const sess = jar.get("bk_laravel_session")?.value || "";
-  const xsrf = jar.get("bk_xsrf")?.value || "";
+  // 2) cookie: usa i mirror bk_* se ci sono, altrimenti passa quelli in arrivo
+  const jar = await cookies();
+  const sessMirror = jar.get("bk_laravel_session")?.value || "";
+  const xsrfMirror = jar.get("bk_xsrf")?.value || "";
 
-  const cookieHeaderParts: string[] = [];
-  if (sess) cookieHeaderParts.push(`laravel_session=${sess}`);
-  if (xsrf) cookieHeaderParts.push(`XSRF-TOKEN=${xsrf}`);
-  if (cookieHeaderParts.length) headers.set("cookie", cookieHeaderParts.join("; "));
-  else headers.delete("cookie");
+  const incomingCookieHeader = req.headers.get("cookie") || "";
 
-  if (xsrf && !headers.has("x-xsrf-token")) {
-    headers.set("x-xsrf-token", decodeURIComponent(xsrf));
+  if (sessMirror || xsrfMirror) {
+    // Ricostruisci Cookie per Laravel usando i mirror
+    // ATTENZIONE al nome del cookie sessione: NON forzarlo a 'laravel_session'
+    // se il tuo config/session.php usa un nome custom (come nel tuo cURL).
+    const sessionCookieName =
+      process.env.LARAVEL_SESSION_COOKIE_NAME /* opzionale env per esplicitarlo */ ||
+      (incomingCookieHeader.match(/(^|;\s)([^=]*_session)=/)?.[2]) || // prova a inferirlo
+      "laravel_session";
+
+    const list: string[] = [];
+    if (sessMirror) list.push(`${sessionCookieName}=${sessMirror}`);
+    if (xsrfMirror) list.push(`XSRF-TOKEN=${xsrfMirror}`);
+    headers.set("cookie", list.join("; "));
+  } else {
+    // fallback: passa i cookie del browser così come sono
+    if (incomingCookieHeader) headers.set("cookie", incomingCookieHeader);
+    else headers.delete("cookie");
   }
 
-  const body =
-    method === "GET" || method === "HEAD" ? undefined : (req as any).body;
+  // 3) XSRF header: se presente, DEVE essere decodificato
+  let xsrfHeader = headers.get("x-xsrf-token") || xsrfMirror || "";
+  if (xsrfHeader) {
+    try {
+      xsrfHeader = decodeURIComponent(xsrfHeader);
+    } catch {}
+    headers.set("x-xsrf-token", xsrfHeader);
+  }
+
+  // 4) corpo streaming
+  const body = method === "GET" || method === "HEAD" ? undefined : (req as any).body;
 
   const url = `${backend}${laravelPath}${search}`;
   const upstream = await fetch(url, {
@@ -60,29 +73,14 @@ export async function forwardToLaravelStream(
     redirect: "manual",
   });
 
-  const outHeaders = new Headers();
+  // 5) propaga headers in risposta (senza content-length)
+  const out = new Headers();
   upstream.headers.forEach((v, k) => {
     const key = k.toLowerCase();
     if (key === "content-length") return;
-    if (key === "set-cookie") outHeaders.append("set-cookie", v);
-    else outHeaders.set(k, v);
+    if (key === "set-cookie") out.append("set-cookie", v);
+    else out.set(k, v);
   });
 
-  // (Facoltativo) se vuoi aggiornare i cookie mirror quando Laravel li rinnova:
-  // const setCookies = (upstream.headers as any).getSetCookie?.() ??
-  //   (upstream.headers.get("set-cookie") ? [upstream.headers.get("set-cookie") as string] : []);
-  // if (setCookies.length) {
-  //   const jarOut = await cookies(); // ⬅️ anche qui serve await
-  //   for (const sc of setCookies) {
-  //     const mSess = sc.match(/laravel_session=([^;]+)/);
-  //     const mXsrf = sc.match(/XSRF-TOKEN=([^;]+)/);
-  //     if (mSess) jarOut.set("bk_laravel_session", mSess[1], { httpOnly: true, secure: true, sameSite: "lax", path: "/" });
-  //     if (mXsrf) jarOut.set("bk_xsrf", mXsrf[1], { httpOnly: true, secure: true, sameSite: "lax", path: "/" });
-  //   }
-  // }
-
-  return new Response(upstream.body, {
-    status: upstream.status,
-    headers: outHeaders,
-  });
+  return new Response(upstream.body, { status: upstream.status, headers: out });
 }
