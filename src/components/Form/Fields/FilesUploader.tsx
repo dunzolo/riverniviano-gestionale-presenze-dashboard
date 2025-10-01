@@ -26,6 +26,9 @@ export interface FilesUploaderProps {
   draggable?: boolean;
   /** In KB */
   maxFileSize?: number;
+  uploadChunk?: boolean;
+  /** In KB */
+  chunkSize?: number;
 }
 
 export const FilesUploader = ({
@@ -36,12 +39,14 @@ export const FilesUploader = ({
   uploadProps,
   availableExtensions: propsAvailableExtensions,
   suggestions,
-  url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/attachments`,
+  url = "/api/attachments",
   storage: propsStorage,
   multiple,
   onChange,
   draggable,
   maxFileSize: propsMaxFileSize,
+  uploadChunk,
+  chunkSize = 25 * 1024,
 }: FilesUploaderProps) => {
   const {
     availableExtensions: defaultAvailableExtensions,
@@ -64,18 +69,27 @@ export const FilesUploader = ({
     return e?.fileList;
   };
 
-  const getCookie = (name: string) =>
-    document.cookie
-      .split("; ")
-      .find((r) => r.startsWith(name + "="))
-      ?.split("=")[1] || "";
-
   const handleUpload = async ({
     file,
     onSuccess,
     onError,
     onProgress,
   }: UploadRequestOption) => {
+    const fileSizeInBytes = (file as RcFile)?.size;
+    const fileSize = fileSizeInBytes / 1000;
+
+    if (maxFileSize && fileSize > maxFileSize) {
+      // @ts-ignore
+      onError?.({ message: "File troppo grande" });
+      form.setFields([
+        {
+          name: path,
+          errors: [`File troppo grande, massimo ${maxFileSize / 1024} MB`],
+        },
+      ]);
+      return;
+    }
+
     const afterUpload = (attachment: any) => {
       if (!availableExtensions?.includes(attachment.extension?.toLowerCase())) {
         // @ts-ignore
@@ -108,82 +122,25 @@ export const FilesUploader = ({
       ]);
     };
 
+    // 👉 invio semplice senza chunk
     try {
-      // 1) limite dimensione
-      const sizeKB = ((file as RcFile).size ?? 0) / 1000;
-      if (maxFileSize && sizeKB > maxFileSize) {
-        // @ts-ignore
-        onError?.({ message: "File troppo grande" });
-        form.setFields([
-          {
-            name: path,
-            errors: [`File troppo grande, massimo ${maxFileSize / 1024} MB`],
-          },
-        ]);
-        return;
-      }
-
-      // 2) prendi cookie CSRF di Sanctum
-      await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      // 3) prepara FormData REALE (con filename e mime)
-      const f = file as RcFile;
-      const filename = f.name || "upload";
-      const mime = f.type || "application/octet-stream";
-
       const formData = new FormData();
-      const fileWithName = new File([f], filename, { type: mime });
-      formData.append("attachment", fileWithName, filename);
-      (availableExtensions ?? []).forEach((ext) =>
-        formData.append("availableExtensions[]", ext)
-      );
+      formData.append("attachment", file as RcFile);
 
-      // 4) POST diretto al backend Laravel
-      const xsrf = decodeURIComponent(getCookie("XSRF-TOKEN"));
+      const { data } = await api.post(`${url}/${storage}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+        onUploadProgress: (event) => {
+          if (event.total) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress?.({ percent });
+          }
+        },
+      });
 
-      const { data } = await api.post(
-        `${url}/${storage}`, // es: https://backend.tld/api/attachments/private
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "X-XSRF-TOKEN": xsrf,
-            "X-Requested-With": "XMLHttpRequest",
-            // NON impostare "Content-Type"
-          },
-          // evita qualunque transform custom che magari hai impostato nella tua api
-          transformRequest: [(d) => d],
-          onUploadProgress: (e) => {
-            if (e.total)
-              onProgress?.({ percent: Math.round((e.loaded / e.total) * 100) });
-          },
-        }
-      );
-
-      const attachment = data.data;
-      const ext = (attachment.extension ?? "").toLowerCase();
-      if (!availableExtensions?.includes(ext)) {
-        // @ts-ignore
-        onError?.({ message: `Formato ${ext} non valido` });
-        form.setFields([{ name: path, errors: [`Formato ${ext} non valido`] }]);
-        return;
-      }
-
-      form.setFields([{ name: path, errors: [] }]);
-      onSuccess?.("Upload successful", attachment);
+      afterUpload(data.data);
     } catch (error: any) {
-      const msgs = error?.response?.data?.errors?.attachment ?? [
-        error?.message ?? "File non valido",
-      ];
-      // @ts-ignore
-      onError?.({ message: msgs.join(", ") });
-      form.setFields([{ name: path, errors: msgs }]);
+      handleErrorFetch(error);
     }
   };
 
