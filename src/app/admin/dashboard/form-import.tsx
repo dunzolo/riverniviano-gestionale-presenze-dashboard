@@ -72,11 +72,10 @@ export const FormImport = () => {
               required
             />
             <FilesUploader
+              draggable
               key={uploaderKey}
               name="attachment"
               label="Carica file (Excel/CSV)"
-              url="/api/attachments"
-              draggable
               availableExtensions={["xlsx", "xls", "csv"]}
               maxFileSize={10 * 1024}
             />
