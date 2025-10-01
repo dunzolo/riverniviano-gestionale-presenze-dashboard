@@ -8,7 +8,7 @@ import {
   CloseOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { Button, Space } from "antd";
+import { Button } from "antd";
 
 export type AttendanceStatusButtonsProps = {
   value?: AttendanceStatus | null;
@@ -47,7 +47,7 @@ export function AttendanceStatusButtons({
   const { valueEnum } = useValueEnum();
 
   return (
-    <Space wrap>
+    <div className="flex gap-2">
       {(Object.keys(valueEnum.attendanceStatus) as AttendanceStatus[]).map(
         (status) => {
           const active = value === status;
@@ -58,9 +58,25 @@ export function AttendanceStatusButtons({
                 borderColor: color,
                 color: STATUS_COLORS_TEXT[status],
               }
-            : undefined;
+            : {
+                borderColor: color,
+                color: STATUS_COLORS[status],
+              };
 
           return (
+            // <Button
+            //   key={status}
+            //   size={size}
+            //   type="default"
+            //   disabled={disabled}
+            //   style={style}
+            //   icon={STATUS_ICONS[status]}
+            //   onClick={() => onChange?.(status)}
+            //   aria-pressed={active}
+            // >
+            //   {valueEnum.attendanceStatus[status]}
+            // </Button>
+
             <Button
               key={status}
               size={size}
@@ -70,12 +86,10 @@ export function AttendanceStatusButtons({
               icon={STATUS_ICONS[status]}
               onClick={() => onChange?.(status)}
               aria-pressed={active}
-            >
-              {valueEnum.attendanceStatus[status]}
-            </Button>
+            />
           );
         }
       )}
-    </Space>
+    </div>
   );
 }

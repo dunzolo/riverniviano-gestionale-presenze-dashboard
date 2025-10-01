@@ -1,6 +1,7 @@
 import { Values } from "@/types";
+import { GlobalToken } from "antd";
 import dayjs from "dayjs";
-import { Key } from "react";
+import { CSSProperties, Key } from "react";
 
 export const extractRecursiveKeys = (obj: any, prefix = "") => {
   let result: any = {};
@@ -93,4 +94,15 @@ export const getSeparators = (language: string) => {
 export const getDataIndexFromCommaNotation = (path?: Key) => {
   if (path) return `${path}`.replace("table-field-", "").split(",");
   return path;
+};
+
+export const getStyle = (token: GlobalToken, type: "border"): CSSProperties => {
+  if (type === "border")
+    return {
+      borderWidth: token.lineWidth,
+      borderStyle: token.lineType,
+      borderColor: token.colorBorderSecondary,
+      borderRadius: token.borderRadius,
+    };
+  return {};
 };

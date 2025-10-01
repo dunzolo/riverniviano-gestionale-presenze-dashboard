@@ -84,18 +84,15 @@ export const TrainingFields = () => {
       </Section.Grid>
 
       {/* METADATA */}
-      <Section.Card title="Metadata">
+      <Section.Card
+        title="Informazioni aggiuntive"
+        collapsible
+        defaultCollapsed
+      >
         <Section.Grid className="md:grid-cols-2">
-          <TextEditor
-            name={["training", "meta", "preparation"]}
-            label="Preparazione"
-          />
-          <TextEditor
-            name={["training", "meta", "organization"]}
-            label="Organizzazione"
-          />
           <TextEditor name={["training", "meta", "rules"]} label="Regole" />
           <TextEditor
+            className="[&_.tox-toolbar__group]:!p-0"
             name={["training", "meta", "description"]}
             label="Descrizione"
           />

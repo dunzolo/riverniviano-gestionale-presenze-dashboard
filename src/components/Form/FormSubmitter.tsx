@@ -29,7 +29,11 @@ export const FormSubmitter = ({
   }, [onBack]);
 
   if (type === "default") {
-    return <FooterToolbar extra={backButton}>{content}</FooterToolbar>;
+    return (
+      <FooterToolbar className="!bg-white" extra={backButton}>
+        {content}
+      </FooterToolbar>
+    );
   }
 
   if (type === "drawer")

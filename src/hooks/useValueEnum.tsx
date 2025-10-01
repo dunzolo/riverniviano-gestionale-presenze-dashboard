@@ -5,6 +5,7 @@ import {
   AttendanceStatus,
   GameCategory,
   GameCompetition,
+  GameVenueType,
   TrainingDifficulty,
 } from "@/utils/enum";
 import React from "react";
@@ -65,6 +66,11 @@ export const ValueEnumProvider = ({ children }: ValueEnumProps) => {
       [GameCompetition.Friendly]: "Amichevole",
       [GameCompetition.League]: "Campionato",
       [GameCompetition.Tournament]: "Torneo",
+    },
+    gameVenueTypes: {
+      [GameVenueType.Home]: "Casa",
+      [GameVenueType.Away]: "Fuori casa",
+      [GameVenueType.Neutral]: "Neutrale",
     },
     attendanceStatus: {
       [AttendanceStatus.Present]: "Presente",

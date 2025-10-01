@@ -1,11 +1,15 @@
+"use client";
+
+import { useCrudDataTable } from "@/components/CrudDataTable";
 import { AdvancedProForm, FormProps } from "@/components/Form/AdvancedProForm";
 import { AdvencedProFormDatePicker } from "@/components/Form/Fields/AdvencedProFormDatePicker";
 import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
+import { MaskedInputHour } from "@/components/Form/Fields/Masked/MaskedInputHour";
 import { Section } from "@/components/Section";
-import { useApi } from "@/hooks/useApi";
 import { useUser } from "@/hooks/useUser";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { SessionType } from "@/utils/enum";
+import { CalendarOutlined, TrophyOutlined } from "@ant-design/icons";
 import {
   ProForm,
   ProFormDependency,
@@ -13,58 +17,48 @@ import {
   ProFormText,
 } from "@ant-design/pro-components";
 import { Typography } from "antd";
-import { MatchFields } from "./match-fields";
-import { TrainingFields } from "./training-fields";
+import { useSearchParams } from "next/navigation";
+import { MatchFields } from "./(form)/MatchFields";
+import { TrainingFields } from "./(form)/TrainingFields";
 
-interface SessionFormProps extends FormProps {
-  sessionType: SessionType;
-}
-
-export const SessionForm = ({
-  title,
-  initialValues,
-  sessionType,
-  ...props
-}: SessionFormProps) => {
-  const { isOperator } = useUserRoles();
+export const SessionForm = ({ ...props }: FormProps) => {
   const { user } = useUser();
-  const { makeRequest } = useApi();
+  const { item } = useCrudDataTable();
+  const { isOperator } = useUserRoles();
 
+  const initialValues = { ...props.initialValues };
   const isEdit = !!initialValues?.id;
+  const hasMoreTeams = user?.has_more_teams;
+  const isOperatorCreate = isOperator && !isEdit;
 
-  const formRequest = async () => {
-    let base = { ...initialValues };
+  const searchParams = useSearchParams();
+  const sessionType: SessionType = item?.type ?? searchParams.get("extra_type");
 
-    if (isOperator && !initialValues?.id) {
-      const seasonData = await makeRequest(`/api/seasons/all`, "get");
-      const seasonTeamData = await makeRequest(`/api/season-teams/all`, "get", {
-        filter: {
-          season_id: seasonData.data[0].value,
-          user_id: user?.id,
-        },
-      });
-
-      base = {
-        ...base,
-        season_team: { season_id: seasonData.data[0].value },
-        season_team_id: seasonTeamData.data[0].value,
-        user_id: user?.id,
-      };
-    }
-
-    return base;
-  };
+  if (!sessionType) {
+    return <></>;
+  }
 
   return (
     <AdvancedProForm
       {...props}
-      initialValues={{ ...initialValues }}
-      request={formRequest}
+      initialValues={{
+        ...initialValues,
+        type: sessionType,
+        season_team: {
+          season_id: isOperatorCreate
+            ? user?.season_id
+            : initialValues?.season_team?.season_id,
+        },
+        season_team_id: isOperatorCreate
+          ? user?.season_team_id
+          : initialValues?.season_team_id,
+        user_id: isOperatorCreate ? user?.id : initialValues?.user_id,
+      }}
     >
       <FormContent
         isEdit={isEdit}
         sessionType={sessionType}
-        isOperator={isOperator}
+        hasMoreTeams={hasMoreTeams}
       />
     </AdvancedProForm>
   );
@@ -73,102 +67,183 @@ export const SessionForm = ({
 interface FormContentProps {
   isEdit?: boolean;
   sessionType: SessionType;
-  isOperator?: boolean;
+  hasMoreTeams?: boolean;
 }
 
-const FormContent = ({ isEdit, sessionType, isOperator }: FormContentProps) => {
-  const [form] = ProForm.useForm();
+const FormContent = ({
+  isEdit,
+  sessionType,
+  hasMoreTeams,
+}: FormContentProps) => {
+  const { isAdmin, isOperator } = useUserRoles();
+  const form = ProForm.useFormInstance();
 
-  const title = isEdit
-    ? sessionType === SessionType.Training
-      ? "Modifica allenamento"
-      : "Modifica partita"
-    : sessionType === SessionType.Training
-    ? "Crea allenamento"
-    : "Crea partita";
+  const isMatch = sessionType === SessionType.Match;
+  const isTraining = sessionType === SessionType.Training;
+
+  const config = {
+    training: {
+      icon: <CalendarOutlined />,
+      create: "Crea allenamento",
+      edit: "Modifica allenamento",
+    },
+    match: {
+      icon: <TrophyOutlined />,
+      create: "Crea partita",
+      edit: "Modifica partita",
+    },
+  };
+
+  const Title = () => {
+    if (!sessionType) return null;
+
+    const icon = config[sessionType].icon;
+    const text = isEdit ? config[sessionType].edit : config[sessionType].create;
+    return (
+      <>
+        {icon} {text}
+      </>
+    );
+  };
 
   return (
     <Section.Grid>
-      <Typography.Title level={4}>{title}</Typography.Title>
-      <ProFormText name="type" label="Tipo" initialValue={sessionType} hidden />
-      <Section.Card title="Dati generali">
-        <Section.Grid className="md:grid-cols-4">
-          {/* STAGIONE */}
-          <ApiSelect
-            name={["season_team", "season_id"]}
-            label="Stagione"
-            url={`/api/seasons/all`}
-            onChange={() => {
-              form.resetFields(["season_team_id", "user_id"]);
-            }}
-            disabled={isOperator}
-            required
-          />
+      <Typography.Title className="!mb-0" level={4}>
+        <Title />
+      </Typography.Title>
 
-          {/* CATEGORIA */}
-          <ProFormDependency name={["season_team", "season_id"]}>
-            {({ season_team }, ref) => {
-              const label = "Categoria";
-              const season_id = season_team?.season_id;
+      {/* HIDDEN */}
+      <ProFormText name="type" hidden />
+      {isOperator && (
+        <>
+          <ProFormText name={["season_team", "season_id"]} hidden />
+          <ProFormText name="season_team_id" hidden />
+          <ProFormText name="user_id" hidden />
+        </>
+      )}
 
-              if (!season_id) {
-                return <ProFormSelect disabled label={label} />;
-              }
+      {/* DATA */}
+      <AdvencedProFormDatePicker name="date" label="Data" required />
 
-              return (
-                <ApiSelect
-                  name="season_team_id"
-                  label="Categoria"
-                  url="/api/season-teams/all"
-                  filters={{ season_id }}
-                  disabled={isOperator || !season_id}
-                  allowClear
-                  onChange={() => {
-                    form.resetFields(["user_id"]); // better than setFieldValue(null)
-                  }}
-                  required
-                />
-              );
-            }}
-          </ProFormDependency>
+      {/* ORA */}
+      {isMatch && (
+        <MaskedInputHour
+          name={"hour"}
+          label={"Ora"}
+          fieldProps={{
+            placeholder: "oo:mm",
+          }}
+          required
+        />
+      )}
 
-          {/* ALLEANTORE */}
-          <ProFormDependency
-            name={[["season_team", "season_id"], "season_team_id"]}
-          >
-            {({ season_team, season_team_id }) => {
-              const label = "Allenatore";
-              const disabled = !season_team?.season_id || !season_team_id;
+      {isOperator && hasMoreTeams && (
+        <ProFormDependency name={["season_team", "season_id"]}>
+          {({ season_team }, ref) => {
+            const label = "Categoria";
+            const season_id = season_team?.season_id;
 
-              if (disabled) {
+            if (!season_id) {
+              return <ProFormSelect disabled label={label} />;
+            }
+
+            return (
+              <ApiSelect
+                name="season_team_id"
+                label="Categoria"
+                url="/api/season-teams/all"
+                filters={{ season_id, user_id: form.getFieldValue("user_id") }}
+                disabled={isEdit}
+                onChange={(_, option: any) => {
+                  // eseguo il set del campo game.category
+                  // se la sessione è di tipo partita e la categoria selezionataè di età mista
+                  if (option?.mixed_age && isMatch) {
+                    form.setFieldValue(["game", "category"], "mixed_age");
+                  }
+                }}
+                allowClear
+                required
+              />
+            );
+          }}
+        </ProFormDependency>
+      )}
+
+      {isAdmin && (
+        <Section.Card title="Dati generali">
+          <Section.Grid className="md:grid-cols-3">
+            {/* STAGIONE */}
+            <ApiSelect
+              name={["season_team", "season_id"]}
+              label="Stagione"
+              url={`/api/seasons/all`}
+              onChange={() => {
+                form.setFieldValue("user_id", null);
+                form.setFieldValue("season_team_id", null);
+              }}
+              allowClear
+              required
+            />
+
+            {/* CATEGORIA */}
+            <ProFormDependency name={["season_team", "season_id"]}>
+              {({ season_team }, ref) => {
+                const label = "Categoria";
+                const season_id = season_team?.season_id;
+
+                if (!season_id) {
+                  return <ProFormSelect disabled label={label} />;
+                }
+
                 return (
-                  <ProFormSelect label={label} disabled preserve={false} />
+                  <ApiSelect
+                    name="season_team_id"
+                    label="Categoria"
+                    url="/api/season-teams/all"
+                    filters={{ season_id }}
+                    disabled={!season_id}
+                    onChange={() => {
+                      form.setFieldValue("user_id", null);
+                    }}
+                    allowClear
+                    required
+                  />
                 );
-              }
+              }}
+            </ProFormDependency>
 
-              return (
-                <ApiSelect
-                  key={`user-${season_team?.season_id}-${season_team_id}`}
-                  name="user_id"
-                  label={label}
-                  url="/api/season-team-users/all"
-                  filters={{ season_team_id }}
-                  disabled={isOperator || disabled}
-                  allowClear
-                  required
-                  preserve={false}
-                />
-              );
-            }}
-          </ProFormDependency>
+            {/* ALLEANTORE */}
+            <ProFormDependency
+              name={[["season_team", "season_id"], "season_team_id"]}
+            >
+              {({ season_team, season_team_id }) => {
+                const label = "Allenatore";
+                const disabled = !season_team?.season_id || !season_team_id;
 
-          {/* DATA */}
-          <AdvencedProFormDatePicker name="date" label="Data" required />
-        </Section.Grid>
-      </Section.Card>
+                if (disabled) {
+                  return <ProFormSelect label={label} disabled />;
+                }
 
-      {sessionType === SessionType.Training && <TrainingFields />}
-      {sessionType === SessionType.Match && <MatchFields />}
+                return (
+                  <ApiSelect
+                    key={`user-${season_team?.season_id}-${season_team_id}`}
+                    name="user_id"
+                    label={label}
+                    url="/api/season-team-users/all"
+                    filters={{ season_team_id }}
+                    disabled={disabled}
+                    allowClear
+                    required
+                  />
+                );
+              }}
+            </ProFormDependency>
+          </Section.Grid>
+        </Section.Card>
+      )}
+
+      {isTraining && <TrainingFields />}
+      {isMatch && <MatchFields isEdit={isEdit} />}
     </Section.Grid>
   );
 };

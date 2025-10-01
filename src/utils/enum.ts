@@ -1,5 +1,5 @@
 export enum UserTypes {
-  FullAccess = "full_access",
+  FullAccess = "full-access",
   Operator = "operator"
 }
 
@@ -23,6 +23,12 @@ export enum GameCompetition {
   Friendly = "friendly",
   League = "league",
   Tournament = "tournament",
+}
+
+export enum GameVenueType {
+  Home = "home",
+  Away = "away",
+  Neutral = "neutral",
 }
 
 export enum AttendanceStatus {
