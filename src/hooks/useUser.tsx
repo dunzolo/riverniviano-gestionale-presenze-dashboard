@@ -10,16 +10,14 @@ export interface User extends Item {
   functionalities: string[];
   // lista di permessi associati all'utente corrente
   permissions: string[];
+  // lista dei ruoli associati all'utente
+  role_names: string[];
 }
 
 export const useUser = () => {
-  const { data, isLoading, mutate } = useSWR(
-    "user-me",
-    () => fetcher(route.userMe),
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    }
-  );
+  const { data, isLoading, mutate } = useSWR(route.userMe, fetcher, {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
   return { user: data?.data, authenticated: !!data?.data, isLoading, mutate };
 };

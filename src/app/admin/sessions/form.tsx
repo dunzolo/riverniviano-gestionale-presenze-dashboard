@@ -6,9 +6,9 @@ import { AdvencedProFormDatePicker } from "@/components/Form/Fields/AdvencedProF
 import { ApiSelect } from "@/components/Form/Fields/ApiSelect";
 import { MaskedInputHour } from "@/components/Form/Fields/Masked/MaskedInputHour";
 import { Section } from "@/components/Section";
+import { useRole } from "@/hooks/useAuth";
 import { useUser } from "@/hooks/useUser";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import { SessionType } from "@/utils/enum";
+import { Roles, SessionType } from "@/utils/enum";
 import { CalendarOutlined, TrophyOutlined } from "@ant-design/icons";
 import {
   ProForm,
@@ -24,7 +24,7 @@ import { TrainingFields } from "./(form)/TrainingFields";
 export const SessionForm = ({ ...props }: FormProps) => {
   const { user } = useUser();
   const { item } = useCrudDataTable();
-  const { isOperator } = useUserRoles();
+  const isOperator = useRole(Roles.Operator);
 
   const initialValues = { ...props.initialValues };
   const isEdit = !!initialValues?.id;
@@ -75,7 +75,8 @@ const FormContent = ({
   sessionType,
   hasMoreTeams,
 }: FormContentProps) => {
-  const { isAdmin, isOperator } = useUserRoles();
+  const isOperator = useRole(Roles.Operator);
+  const isAdmin = useRole(Roles.FullAccess);
   const form = ProForm.useFormInstance();
 
   const isMatch = sessionType === SessionType.Match;

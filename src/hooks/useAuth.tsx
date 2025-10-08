@@ -1,8 +1,9 @@
 "use client";
 
+import { Roles } from "@/utils/enum";
 import { AxiosPromise } from "axios";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import { api } from "./useApi";
 import { useUser } from "./useUser";
 
@@ -92,4 +93,27 @@ export const useAuth = () => {
     throw new Error("useAuth should only be used inside <AuthProvider />");
 
   return context;
+};
+
+/**
+ * @description Check that the user has at least one of the role specified
+ * @param roles Single or Multiple roles to check
+ * @returns Boolean indicating if the user has at least one of the specified roles.
+ */
+export const useRole = (roles: Roles | Roles[]) => {
+  const { user } = useUser();
+  const hasRole = useMemo(() => {
+    if (!roles || roles.length === 0) return true;
+    if (Array.isArray(roles)) {
+      var hasRole = false;
+      for (const role of roles) {
+        hasRole = user?.role_names?.includes(role) ?? false;
+        if (hasRole) break;
+      }
+      return hasRole;
+    } else {
+      return user?.role_names?.includes(roles) ?? false;
+    }
+  }, [user, roles]);
+  return hasRole;
 };

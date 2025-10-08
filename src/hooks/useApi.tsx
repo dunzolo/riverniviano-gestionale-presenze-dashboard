@@ -24,6 +24,21 @@ export const api = axios.create(axiosConfig);
 export const fetcher = (url: string, params?: Values) =>
   api.get(url, { params }).then((res) => res.data);
 
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (
+      error?.response?.status === 401 &&
+      window.location.pathname !== "/auth/login"
+    ) {
+      window.location.pathname = `/auth/login`;
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const useApi = (defaultIsLoading = true) => {
   const [isLoading, setIsLoading] = useState(defaultIsLoading);
   const [data, setData] = useState<Item | undefined>(undefined);

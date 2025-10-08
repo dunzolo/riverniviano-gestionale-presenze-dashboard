@@ -1,4 +1,4 @@
-export enum UserTypes {
+export enum Roles {
   FullAccess = "full-access",
   Operator = "operator"
 }

@@ -1,10 +1,10 @@
 import { DeleteButton } from "@/components/Buttons/DeleteButton";
 import { DetailButton } from "@/components/Buttons/DetailButton";
 import { CrudDataTable, Tab } from "@/components/CrudDataTable";
+import { useRole } from "@/hooks/useAuth";
 import { PolicyProvider } from "@/hooks/usePolicy";
-import { useUserRoles } from "@/hooks/useUserRoles";
 import { Values } from "@/types";
-import { SessionType } from "@/utils/enum";
+import { Roles, SessionType } from "@/utils/enum";
 import { createQueryString } from "@/utils/queryParams";
 import { CalendarOutlined, PlusOutlined } from "@ant-design/icons";
 import { ProList } from "@ant-design/pro-components";
@@ -25,8 +25,7 @@ export const Table = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const { isAdmin } = useUserRoles();
+  const isAdmin = useRole(Roles.FullAccess);
 
   const [open, setOpen] = useState(false);
 
